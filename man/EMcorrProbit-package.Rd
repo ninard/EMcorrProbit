@@ -1,6 +1,5 @@
 \name{EMcorrProbit}
 \alias{EMcorrProbit}
-\alias{EMcorrProbit}
 \docType{package}
 \title{
 What the package does (short line)
