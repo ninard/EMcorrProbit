@@ -1,6 +1,15 @@
-EMcorrProbit <- function(xfixed, xrand, ...) UseMethod("EMcorrProbit")
+#' Estimates via EM.
+#' 
+#' @param xfixed Fixed predictors.
+#' @param xrand Random predictors.
+#' @param y Ordinal data.
+#' @return The estimation of correlated probit model.
+#' @examples
+#' EMcorrProbit(xfixed, xrand, y, start.values.beta, start.values.delta=NULL,  start.values.sigma.rand, exact, montecarlo=100, epsilon=.001, ...)
 
-EMcorrProbit.default <- function(xfixed, xrand, y, start.values.beta, 
+emcorrprob <- function(xfixed, xrand, ...) UseMethod("emcorrprob")
+
+emcorrprob.default <- function(xfixed, xrand, y, start.values.beta, 
                                  start.values.delta=NULL,  start.values.sigma.rand, 
                                  exact, montecarlo=100, epsilon=.001, ...)
 {
@@ -15,31 +24,31 @@ EMcorrProbit.default <- function(xfixed, xrand, y, start.values.beta,
   
   est$call <-match.call()
   
-  class(est) <- "EMcorrProbit"
+  class(est) <- "emcorrprob"
   est
 }
 
-print.EMcorrProbit <- function(x, ...)
+print.emcorrprob <- function(x, ...)
 {
   print(x)
 }
-summary.EMcorrProbit <- function(x, ...)
-{
-  print(x)
-}
-
-print.summary.EMcorrProbit <- function(x, ...)
+summary.emcorrprob <- function(x, ...)
 {
   print(x)
 }
 
-formula.EMcorrProbit <- function(formula, data=list(), ...)
+print.summary.emcorrprob <- function(x, ...)
+{
+  print(x)
+}
+
+formula.emcorrprob <- function(formula, data=list(), ...)
 {
   mf <- model.frame(formula=formula, data=data)
   x <- model.matrix(attr(mf, "terms"), data = mf)
   y <- model.response(mf)
   
-  est <- EMcorrProbit.default(x, y, ...)
+  est <- emcorrprob.default(x, y, ...)
   est$call <-match.call
   est$formula <-formula
   est
