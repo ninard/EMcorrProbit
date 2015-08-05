@@ -1,0 +1,10 @@
+Package: EMcorrProbit
+Type: Package
+Title: Estimating correlated probit models via EM algorithm
+Version: 1.0
+Date: 2015-08-03
+Author: Denitsa Grigorova, Nina Daskalova
+Maintainer: Denitsa Grigorova <dgrigorova@fmi.uni-sofia.bg>
+Description: More about what it does (maybe more than one line)
+License: GPL-2
+Depends: MASS, mvtnorm
