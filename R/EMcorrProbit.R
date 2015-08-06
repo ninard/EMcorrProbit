@@ -549,8 +549,8 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
 #################################################
 ######################   ecm algorithm
 ########################################################
-ecm.one.ordinal.complete.cases <- function(start.values.beta,start.values.delta=NULL,start.values.sigma.rand,
-                                        exact,montecarlo=100,data.ordinal,predictors.fixed,predictors.random,epsilon=.001) 
+ecm.one.ordinal.complete.cases <- function(data.ordinal,predictors.fixed,predictors.random,start.values.beta,start.values.delta,start.values.sigma.rand,
+                                           exact,montecarlo,epsilon) 
   {
   
   ########################################
