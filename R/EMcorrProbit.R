@@ -87,7 +87,7 @@ print.emcorrprobit <- function(x, ...)
 
 summary.emcorrprobit <- function(x, ...)
 {
-  se = seq(NA, along.with = x$regression.coefficients)
+  se = rep(NA, length(x$regression.coefficients))
   
   TAB <- cbind(Estimate = x$regression.coefficients, 
                StdErr = se)
