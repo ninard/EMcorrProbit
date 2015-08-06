@@ -4,14 +4,14 @@
 \alias{emcorrprobit}
 \title{Estimates via EM.}
 \usage{
-emcorrprobit(xfixed, xrand, ...)
+emcorrprobit(y, ...)
 }
 \arguments{
+\item{y}{Ordinal data.}
+
 \item{xfixed}{Fixed predictors.}
 
 \item{xrand}{Random predictors.}
-
-\item{y}{Ordinal data.}
 }
 \value{
 The estimation of correlated probit model.
@@ -20,6 +20,6 @@ The estimation of correlated probit model.
 Estimates via EM.
 }
 \examples{
-EMcorrProbit(xfixed, xrand, y, start.values.beta, start.values.delta=NULL,  start.values.sigma.rand, exact, montecarlo=100, epsilon=.001, ...)
+EMcorrProbit(y, xfixed, xrand, start.values.beta, start.values.delta=NULL,  start.values.sigma.rand, exact, montecarlo=100, epsilon=.001, ...)
 }
 
