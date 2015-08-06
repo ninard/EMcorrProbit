@@ -2,24 +2,56 @@
 % Please edit documentation in R/EMcorrProbit.R
 \name{emcorrprobit}
 \alias{emcorrprobit}
-\title{Estimates via EM.}
+\title{Fitting Correlated Probit Model for Ordinal Data}
 \usage{
-emcorrprobit(xfixed, xrand, ...)
+emcorrprobit(y, xfixed, xrand, ...)
 }
 \arguments{
-\item{xfixed}{Fixed predictors.}
+\item{y}{2-way array with the response with dimension: individuals x multiple observations. Ordinal data should be in the form: the first level is denoted by 1, second by 2 and so on to the last level.}
 
-\item{xrand}{Random predictors.}
+\item{xfixed}{3-way array with the predictors for the fixed effects with dimension: individuals x dimension of the fixed effects x multiple observations}
 
-\item{y}{Ordinal data.}
+\item{xrand}{3-way array with the predictors for the random effects with dimension: individuals x dimension of the random effects x multiple observations}
+
+\item{exact}{logical. If TRUE analytical calculations of moments of truncated normal distrubution is used, otherwise Monte Carlo approach for estimation is used.}
+
+\item{montecarlo}{numeric. The number of generated values used for estimation of the first two moments of truncated normal distribution.}
+
+\item{start.values.delta}{start values for the differences in the consecutive thresholds \delta}
+
+\item{start.values.beta}{start values for the regression parameters \beta}
+
+\item{start.values.sigma.rand}{start values for the covariance matrix of the random effects \Sigma}
+
+\item{regression.coefficients}{}
+
+\item{differences.in.thresholds}{deltanew,}
+
+\item{thresholds}{c(0,cumsum(deltanew)),}
+
+\item{random.effects}{firstmomentb,}
+
+\item{loglikelihood}{Log-likelohood of the model}
+
+\item{AIC}{Akaike information criterion}
+
+\item{BIC}{Bayesian information criterion}
 }
 \value{
-The estimation of correlated probit model.
+An object of class emcorrprobit. List with following components
+The estimates of the parameter of the correlated probit model.
+\item{Sigma.rand.effects}{The estimated covariance matrix of the random effects}
 }
 \description{
-Estimates via EM.
+Maximum likelihood estimates of the parameters of correlated probit model via EM algorithm. The function works with wide format of the response data. The function allows for NA values for the outcome.
+}
+\details{
+One should choose carefully the start values for the parameters (especially for the covariance matrix of the random effects) and the stopping criterion (the value of epsilon). It is possible the algorithm to stop before convergence and to overestimate or underestimate the parameters. We recommend using different starting values for the parameters and if the results are similar, we may assume that obtained estimates are MLEs.
+When the data consists of 2 or 3 observations per subject we recommend using the analitycal calculation of the moments of trucated normal distribution (exact=T).
 }
 \examples{
-EMcorrProbit(xfixed, xrand, y, start.values.beta, start.values.delta=NULL,  start.values.sigma.rand, exact, montecarlo=100, epsilon=.001, ...)
+### data simulation
+
+EMcorrProbit(y, xfixed, xrand, start.values.beta, start.values.delta=NULL,  start.values.sigma.rand, exact, montecarlo=100, epsilon=.001, ...)
 }
 
