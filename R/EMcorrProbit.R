@@ -7,9 +7,9 @@
 #' @examples
 #' EMcorrProbit(xfixed, xrand, y, start.values.beta, start.values.delta=NULL,  start.values.sigma.rand, exact, montecarlo=100, epsilon=.001, ...)
 
-emcorrprob <- function(xfixed, xrand, ...) UseMethod("emcorrprob")
+emcorrprobit <- function(xfixed, xrand, ...) UseMethod("emcorrprobit")
 
-emcorrprob.default <- function(xfixed, xrand, y, start.values.beta, 
+emcorrprobit.default <- function(y, xfixed, xrand, start.values.beta, 
                                  start.values.delta=NULL,  start.values.sigma.rand, 
                                  exact, montecarlo=100, epsilon=.001, ...)
 {
@@ -24,31 +24,31 @@ emcorrprob.default <- function(xfixed, xrand, y, start.values.beta,
   
   est$call <-match.call()
   
-  class(est) <- "emcorrprob"
+  class(est) <- "emcorrprobit"
   est
 }
 
-print.emcorrprob <- function(x, ...)
+print.emcorrprobit <- function(x, ...)
 {
   print(x)
 }
-summary.emcorrprob <- function(x, ...)
-{
-  print(x)
-}
-
-print.summary.emcorrprob <- function(x, ...)
+summary.emcorrprobit <- function(x, ...)
 {
   print(x)
 }
 
-formula.emcorrprob <- function(formula, data=list(), ...)
+print.summary.emcorrprobit <- function(x, ...)
+{
+  print(x)
+}
+
+formula.emcorrprobit <- function(formula, data=list(), ...)
 {
   mf <- model.frame(formula=formula, data=data)
   x <- model.matrix(attr(mf, "terms"), data = mf)
   y <- model.response(mf)
   
-  est <- emcorrprob.default(x, y, ...)
+  est <- emcorrprobit.default(x, y, ...)
   est$call <-match.call
   est$formula <-formula
   est
