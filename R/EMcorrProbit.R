@@ -40,9 +40,9 @@ emcorrprobit.default <- function(y, xfixed, xrand, start.values.beta,
   if (dim(xfixed)[1] != dim(xrand)[1] | dim(xrand)[1] != dim(y)[1]) print("Wrong dimensions!")
   if (dim(xfixed)[3] != dim(xrand)[3] | dim(xrand)[3] != dim(y)[2]) print("Wrong dimensions!")
   
-  est <- ecm.one.ordinal(y,xfixed,xrand,start.values.beta,start.values.delta=NULL,
+  est <- ecm.one.ordinal(y,xfixed,xrand,start.values.beta,start.values.delta,
                          start.values.sigma.rand,
-                         exact,montecarlo=100,epsilon=.001)
+                         exact,montecarlo,epsilon)
   
   
   est$call <-match.call()
@@ -120,10 +120,9 @@ print.summary.emcorrprobit <- function(x, ...)
 #   est
 # }
 
-ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,start.values.beta,start.values.delta=NULL,start.values.sigma.rand,
-                         exact,montecarlo=100,epsilon=.001) 
+ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,start.values.beta,start.values.delta,start.values.sigma.rand,
+                         exact,montecarlo,epsilon) 
   {
-  
   ########################################
   ### wide format of longitudinal data: first level denoted by 1, second - 2 and so on
   ### predictors.fixed is a 3-dimentional array: individuals x dimentions predictros fixed x time points 
