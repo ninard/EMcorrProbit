@@ -2,8 +2,7 @@
 \alias{EMcorrProbit}
 \docType{package}
 \title{
-What the package does (short line)
-EMcorrProbit
+Maximum likelihood estimation of correlated probit models via EM algorithm
 }
 \description{
 More about what it does (maybe more than one line)
@@ -21,17 +20,19 @@ License: \tab What license is it under?\cr
 ~~ functions ~~
 }
 \author{
-Who wrote it
+Denitsa Grigorova, Nina Daskalova
 
-Maintainer: Who to complain to <yourfault@somewhere.net>
-~~ The author and/or maintainer of the package ~~
+Maintainer: Denitsa Grigorova <dpgrigorova@abv.bg>
+
 }
 \references{
 ~~ Literature or other references for background information ~~
 }
+
+\keyword{ 
 ~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
 ~~ the R documentation directory ~~
-\keyword{ package }
+package }
 \seealso{
 ~~ Optional links to other man pages, e.g. ~~
 ~~ \code{\link[<pkg>:<pkg>-package]{<pkg>}} ~~
