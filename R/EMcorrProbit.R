@@ -260,37 +260,41 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
     #######################################################
     ############### if there is a problem for some individuals - second version!!! independent generation
     ##################################################################################
-    if(exact==F) {
-      simulations <- sapply(1:individuals, function(i) { 
+    if(exact==F) 
+      {
+      simulations <- sapply(1:individuals, function(i) 
+        { 
         if(kk[i]>0)  rtmvnorm(montecarlo, mean=mean.ynew[i,-k[[i]]], 
                               sigma=matrix(as.vector(variance.ynew[-k[[i]],-k[[i]],i]),ncol=mult.obs-kk[i]),
                               lower=trunc.lower[i,-k[[i]]],upper=trunc.upper[i,-k[[i]]], algorithm="gibbs") else  rtmvnorm(
                                 montecarlo, mean=mean.ynew[i,], 
                                 sigma=matrix(as.vector(variance.ynew[,,i]),ncol=mult.obs),
                                 lower=trunc.lower[i,],upper=trunc.upper[i,], algorithm="gibbs")
-      }, # function
-      simplify=F)  
+        }, # function
+        simplify=F)  
       ## simulations is a list
       moments1 <- sapply(1:individuals, function(i) apply(as.matrix(simulations[[i]]),2,mean),simplify=F)
       ## list
       moments2 <- sapply(1:individuals, function(i) var(simulations[[i]]),simplify="array")
       ## list
       ## montecarlo x mult.obs x observations
-    } else {
-      simulations.exact <- sapply(1:individuals, function(i) {
-        if(kk[i]>0) mtmvnorm(mean=mean.ynew[i,-k[[i]]], 
+      } else 
+        {
+        simulations.exact <- sapply(1:individuals, function(i) 
+          {
+          if(kk[i]>0) mtmvnorm(mean=mean.ynew[i,-k[[i]]], 
                              sigma=matrix(as.vector(variance.ynew[-k[[i]],-k[[i]],i]),ncol=mult.obs-kk[i]),
                              lower=trunc.lower[i,-k[[i]]],upper=trunc.upper[i,-k[[i]]]) else 	mtmvnorm(mean=mean.ynew[i,], 
                                                                                                        sigma=matrix(as.vector(variance.ynew[,,i]),ncol=mult.obs),
                                                                                                        lower=trunc.lower[i,],upper=trunc.upper[i,])
-      } #function
-      ,simplify=F)
-      ##  mult.obs x observations
-      moments1 <- sapply(1:individuals, function(i) simulations.exact[[i]]$tmean,simplify=F)
-      ## list
-      moments2 <- sapply(1:individuals, function(i) simulations.exact[[i]]$tvar,simplify=F)
-      ## the variance of y latent
-    }
+          } #function
+          ,simplify=F)
+        ##  mult.obs x observations
+        moments1 <- sapply(1:individuals, function(i) simulations.exact[[i]]$tmean,simplify=F)
+        ## list
+        moments2 <- sapply(1:individuals, function(i) simulations.exact[[i]]$tvar,simplify=F)
+        ## the variance of y latent
+      }
     
     moments1A <- array(NA,dim=c(individuals,mult.obs))
     for(i in 1:individuals) moments1A[i,knot[[i]]] <- moments1[[i]]
@@ -587,10 +591,10 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
        regression.coefficients=betanew,
        differences.in.thresholds=deltanew,
        thresholds=c(0,cumsum(deltanew)),
-       random.effects=firstmomentb,
-       loglikelihood=loglikelihood,
-       AIC=AIC,
-       BIC=BIC,
+#       random.effects=firstmomentb,
+#       loglikelihood=loglikelihood,
+#       AIC=AIC,
+#       BIC=BIC,
        number.iterations=number.it)
   
 } #function ecm.one.ordinal
@@ -878,9 +882,9 @@ list(Sigma.rand.effects=sigma.rand.new,
        regression.coefficients=betanew,
        differences.in.thresholds=deltanew,
        thresholds=c(0,cumsum(deltanew)),
-       random.effects=firstmomentb,
-       loglikelihood=loglikelihood,
-       AIC=AIC,
-       BIC=BIC)
-  
+#       random.effects=firstmomentb,
+#       loglikelihood=loglikelihood,
+#       AIC=AIC,
+#       BIC=BIC,
+     number.iterations=number.it)
 } #function ecm.one.ordinal.complete.cases
