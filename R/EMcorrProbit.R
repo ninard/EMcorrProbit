@@ -273,9 +273,11 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
         }, # function
         simplify=F)  
       ## simulations is a list
-      moments1 <- sapply(1:individuals, function(i) apply(as.matrix(simulations[[i]]),2,mean),simplify=F)
+      #moments1 <- sapply(1:individuals, function(i) apply(as.matrix(simulations[[i]]),2,mean),simplify=F)
+      moments1<-lapply(simulations, function(i) apply(as.matrix(i),2,mean))
       ## list
-      moments2 <- sapply(1:individuals, function(i) var(simulations[[i]]),simplify="array")
+      #moments2 <- sapply(1:individuals, function(i) var(simulations[[i]]),simplify="array")
+      moments2<-lapply(simulations, var)
       ## list
       ## montecarlo x mult.obs x observations
       } else 
