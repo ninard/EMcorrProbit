@@ -900,24 +900,10 @@ list(Sigma.rand.effects=sigma.rand.new,
        regression.coefficients=betanew,
        differences.in.thresholds=deltanew,
        thresholds=c(0,cumsum(deltanew)),
-<<<<<<< HEAD
 #       random.effects=firstmomentb,
 #       loglikelihood=loglikelihood,
 #       AIC=AIC,
 #       BIC=BIC,
      number.iterations=number.it)
-||||||| merged common ancestors
-       random.effects=firstmomentb,
-       loglikelihood=loglikelihood,
-       AIC=AIC,
-       BIC=BIC)
-  
-=======
-#        random.effects=firstmomentb,
-#        loglikelihood=loglikelihood,
-#        AIC=AIC,
-#        BIC=BIC,
-        number.iterations=number.it)
 
->>>>>>> 27b7e881fcfa8fa1528ea2f60153ccff24439184
 } #function ecm.one.ordinal.complete.cases
