@@ -106,14 +106,17 @@ print.emcorrprobit <- function(x, ...)
   cat("\nNumber of iterations: ",x$number.it,"\n")
   cat("\nRegression coefficients: \n")
   cat(x$regression.coefficients,"\n")
-  cat("\nDifferences in thresholds: \n")
-  cat(x$differences.in.thresholds,"\n")
+  if(length(x$differences.in.thresholds)>0) 
+    {cat("\nDifferences in thresholds: \n")
+     cat(x$differences.in.thresholds,"\n")
+    } 
   cat("\nCovariance matrix of the random effects: \n")
   print(x$Sigma.rand.effects)
   cat("\nThresholds: \n")
   cat(x$thresholds,"\n")
-  #cat("\nRandom efects: \n")
-  #print(x$random.effects)
+  cat("\nRandom efects: \n")
+  print(head(x$random.effects))
+  cat("..............\n")
   cat("\nLog-likelihood: \n")
   cat(x$loglikelihood,"\n")
   cat("\nAIC: \n")
@@ -134,13 +137,24 @@ print.emcorrprobit <- function(x, ...)
 
 summary.emcorrprobit <- function(x, ...)
 {
-  se = rep(NA, length(x$regression.coefficients))
+  se.regr.coeff = rep(NA, length(x$regression.coefficients))
   
-  TAB <- cbind(Estimate = x$regression.coefficients, 
-               StdErr = se)
+  TAB.regr.coeff <- cbind(Regression.coeff= x$regression.coefficients, 
+               StdErr = se.regr.coeff)
+  
+  print(TAB.regr.coeff)
+  
+  se.diff.thresholds = rep(NA, length(x$differences.in.thresholds))
+  
+  TAB.diff.thresholds <- cbind(Threshold.differences= x$differences.in.thresholds, 
+               StdErr = se.diff.thresholds)
+  
+  print(TAB.diff.thresholds)
   
   res <- list(call = x$call, 
-              coefficients = TAB)
+              regr.coefficients = TAB.regr.coeff,
+              diff.thresholds=TAB.diff.thresholds
+              )
   
   class(res) <- "summary.emcorrprobit"
   res
@@ -152,7 +166,8 @@ print.summary.emcorrprobit <- function(x, ...)
   print(x$call)
   cat("\n")
   
-  printCoefmat(x$coefficients)
+  printCoefmat(x$regr.coefficients)
+  printCoefmat(x$diff.thresholds)
 }
 
 # formula.emcorrprobit <- function(formula, data=list(), ...)
@@ -230,7 +245,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   knot <- sapply(1:individuals, function(i) which(!is.na(data.ordinal[i,])),simplify=F)
   ### list: observed for each individual
   kk <- sapply(1:individuals, function(i) length(k[[i]]), simplify=T)
-  ### individuals: length of missings for ecah individual
+  ### individuals: length of missings for each individual
   
   ######################################################################
   ############             while loop           ##########################
@@ -478,121 +493,122 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
 #   if(num.categories>2) cat("delta estimate: ",deltanew,"\n")
   
 
-#######  commented for tests only
-#   ###########################################################################
-#   ################### random effects
-#   ###########################################################################
-#   delta.exp <- c(1,deltanew,1)
-#   delta <- matrix(delta.exp[data.ordinal],ncol=mult.obs)
-#   alpha.exp <- c(0,0,cumsum(deltanew))
-#   alpha <- matrix(alpha.exp[data.ordinal],ncol=mult.obs)
-#   
-#   ###expectation of ynew
-#   if(length(start.values.beta)>1) pred <- sapply(1:mult.obs, function(i) predictors.fixed[,,i]%*%betanew, simplify=TRUE)  else pred <- betanew
-#   ## makes pred a matrix: observations x mult.obs
-#   mean.ynew <- (pred-alpha)/delta
-#   
-#   variance.ynew <- sapply(1:individuals, function(i)
-#     (z[,,i]%*%sigma.rand.new%*%t(z[,,i])+diag(mult.obs))/(delta[i,]%*%t(delta[i,])),
-#     simplify="array")
-#   ###
-#   
-#   #######################################################
-#   ############### if there is a problem for some individuals - second version!!! independent generation
-#   ##################################################################################
-#   if(exact==F) {
-#     simulations <- sapply(1:individuals, function(i) { 
-#       if(kk[i]>0)  rtmvnorm(montecarlo, mean=mean.ynew[i,-k[[i]]], 
-#                             sigma=matrix(as.vector(variance.ynew[-k[[i]],-k[[i]],i]),ncol=mult.obs-kk[i]),
-#                             lower=trunc.lower[i,-k[[i]]],upper=trunc.upper[i,-k[[i]]], algorithm="gibbs") else  rtmvnorm(
-#                               montecarlo, mean=mean.ynew[i,], 
-#                               sigma=matrix(as.vector(variance.ynew[,,i]),ncol=mult.obs),
-#                               lower=trunc.lower[i,],upper=trunc.upper[i,], algorithm="gibbs")
-#     }, # function
-#     simplify=F)  
-#     ## simulations is a list
-#     moments1 <- sapply(1:individuals, function(i) apply(as.matrix(simulations[[i]]),2,mean),simplify=F)
-#     ## list
-#     moments2 <- sapply(1:individuals, function(i) var(simulations[[i]]),simplify="array")
-#     ## list
-#     ## montecarlo x mult.obs x observations
-#   } else {
-#     simulations.exact <- sapply(1:individuals, function(i) {
-#       if(kk[i]>0) mtmvnorm(mean=mean.ynew[i,-k[[i]]], 
-#                            sigma=matrix(as.vector(variance.ynew[-k[[i]],-k[[i]],i]),ncol=mult.obs-kk[i]),
-#                            lower=trunc.lower[i,-k[[i]]],upper=trunc.upper[i,-k[[i]]]) else 	mtmvnorm(mean=mean.ynew[i,], 
-#                                                                                                      sigma=matrix(as.vector(variance.ynew[,,i]),ncol=mult.obs),
-#                                                                                                      lower=trunc.lower[i,],upper=trunc.upper[i,])
-#     } #function
-#     ,simplify=F)
-#     ##  mult.obs x observations
-#     moments1 <- sapply(1:individuals, function(i) simulations.exact[[i]]$tmean,simplify=F)
-#     ## list
-#     moments2 <- sapply(1:individuals, function(i) simulations.exact[[i]]$tvar,simplify=F)
-#     ## the variance of y latent
-#   }
-#   
-#   moments1A <- array(NA,dim=c(individuals,mult.obs))
-#   for(i in 1:individuals) moments1A[i,knot[[i]]]=moments1[[i]]
-#   
-#   moments2A <- list(0)
-#   for(i in 1:individuals) {moments2A[[i]]=array(NA, dim=c(mult.obs, mult.obs))
-#                            moments2A[[i]][knot[[i]],knot[[i]]]=moments2[[i]]}
-#   
-#   
-#   ######### to calculate the expectation of the random effects
-#   
-#   sigmab <- sapply(1:individuals, function(i) {
-#     if(kk[i]>0 & kk[i]<(mult.obs-1)) t(t(sigma.rand.new%*%t(z[-k[[i]],,i]))/delta[i,-k[[i]]])%*%solve(variance.ynew[-k[[i]],-k[[i]],i]) else
-#       if(kk[i]==(mult.obs-1)) t(t(sigma.rand.new%*%z[-k[[i]],,i])/delta[i,-k[[i]]])%*%solve(variance.ynew[-k[[i]],-k[[i]],i]) else 
-#         t(t(sigma.rand.new%*%t(z[,,i]))/delta[i,])%*%solve(variance.ynew[,,i])},simplify=F)
-#   ### list: dimension.sigma x mult.obs x individuals
-#   
-#   firstmomentb <- sapply(1:individuals, function(i) {
-#     if(kk[i]>0 & kk[i]<(mult.obs-1)) sigmab[[i]]%*%(moments1[[i]]-mean.ynew[i,-k[[i]]]) else 
-#       if(kk[i]==(mult.obs-1))    sigmab[[i]]%*%as.matrix(moments1[[i]]-mean.ynew[i,-k[[i]]])  else 
-#         sigmab[[i]]%*%(moments1[[i]]-mean.ynew[i,])}, simplify="array")
-#   ### array: dimension.sigma x 1 x individuals
-#   ### when dimension.sigma=1: vector : individuals 
-#   
-#   
-#   #########################################################################################
-#   #########################################################################################
-#   #########################################################################################
-#   ################ log-likelihood #########################################################
-#   #########################################################################################
-#   #########################################################################################
-#   
-#   ordinal.part <- sapply(1:individuals, function(i) log(pmvnorm(mean=mean.ynew[i,knot[[i]]],
-#                                                              sigma=matrix(variance.ynew[knot[[i]],knot[[i]],i], ncol=mult.obs-kk[i]),
-#                                                              lower=trunc.lower[i,knot[[i]]], upper=trunc.upper[i,knot[[i]]])),
-#                       simplify="array")
-#   
-#   loglikelihood <- sum(ordinal.part)
-#   
-#   #cat("Log-likelihood: ",loglikelihood,"\n")
-#   
-#   ###################################################################################
-#   ############## AIC and BIC ########################################################
-#   ###################################################################################
-#   AIC <- -2*loglikelihood+2*(length(betanew)+length(deltanew)+choose(dimension.sigma+1,2))
-#   
-#   BIC <- -2*loglikelihood+log(length(which(!is.na(data.ordinal))))*(length(betanew)+length(deltanew)+choose(dimension.sigma+1,2))
-#   
-#   
-#   #cat("AIC: ",AIC,"\n")
-#   #cat("BIC: ",BIC,"\n")
-#   
-#   #########################################################################################
-#   #########################################################################################
+
+  ###########################################################################
+  ################### random effects
+  ###########################################################################
+  delta.exp <- c(1,deltanew,1)
+  delta <- matrix(delta.exp[data.ordinal],ncol=mult.obs)
+  alpha.exp <- c(0,0,cumsum(deltanew))
+  alpha <- matrix(alpha.exp[data.ordinal],ncol=mult.obs)
+  
+  ###expectation of ynew
+  if(length(start.values.beta)>1) pred <- sapply(1:mult.obs, function(i) predictors.fixed[,,i]%*%betanew, simplify=TRUE)  else pred <- betanew
+  ## makes pred a matrix: observations x mult.obs
+  mean.ynew <- (pred-alpha)/delta
+  
+  variance.ynew <- sapply(1:individuals, function(i)
+    (z[,,i]%*%sigma.rand.new%*%t(z[,,i])+diag(mult.obs))/(delta[i,]%*%t(delta[i,])),
+    simplify="array")
+  ###
+  
+  #######################################################
+  ############### if there is a problem for some individuals - second version!!! independent generation
+  ##################################################################################
+  if(exact==F) {
+    simulations <- sapply(1:individuals, function(i) { 
+      if(kk[i]>0)  rtmvnorm(montecarlo, mean=mean.ynew[i,-k[[i]]], 
+                            sigma=matrix(as.vector(variance.ynew[-k[[i]],-k[[i]],i]),ncol=mult.obs-kk[i]),
+                            lower=trunc.lower[i,-k[[i]]],upper=trunc.upper[i,-k[[i]]], algorithm="gibbs") else  rtmvnorm(
+                              montecarlo, mean=mean.ynew[i,], 
+                              sigma=matrix(as.vector(variance.ynew[,,i]),ncol=mult.obs),
+                              lower=trunc.lower[i,],upper=trunc.upper[i,], algorithm="gibbs")
+    }, # function
+    simplify=F)  
+    ## simulations is a list
+    moments1 <- sapply(1:individuals, function(i) apply(as.matrix(simulations[[i]]),2,mean),simplify=F)
+    ## list
+    moments2 <- sapply(1:individuals, function(i) var(simulations[[i]]),simplify="array")
+    ## list
+    ## montecarlo x mult.obs x observations
+  } else {
+    simulations.exact <- sapply(1:individuals, function(i) {
+      if(kk[i]>0) mtmvnorm(mean=mean.ynew[i,-k[[i]]], 
+                           sigma=matrix(as.vector(variance.ynew[-k[[i]],-k[[i]],i]),ncol=mult.obs-kk[i]),
+                           lower=trunc.lower[i,-k[[i]]],upper=trunc.upper[i,-k[[i]]]) else 	mtmvnorm(mean=mean.ynew[i,], 
+                                                                                                     sigma=matrix(as.vector(variance.ynew[,,i]),ncol=mult.obs),
+                                                                                                     lower=trunc.lower[i,],upper=trunc.upper[i,])
+    } #function
+    ,simplify=F)
+    ##  mult.obs x observations
+    moments1 <- sapply(1:individuals, function(i) simulations.exact[[i]]$tmean,simplify=F)
+    ## list
+    moments2 <- sapply(1:individuals, function(i) simulations.exact[[i]]$tvar,simplify=F)
+    ## the variance of y latent
+  }
+  
+  moments1A <- array(NA,dim=c(individuals,mult.obs))
+  for(i in 1:individuals) moments1A[i,knot[[i]]]=moments1[[i]]
+  
+  moments2A <- list(0)
+  for(i in 1:individuals) {moments2A[[i]]=array(NA, dim=c(mult.obs, mult.obs))
+                           moments2A[[i]][knot[[i]],knot[[i]]]=moments2[[i]]}
+  
+  
+  ######### to calculate the expectation of the random effects
+  
+  sigmab <- sapply(1:individuals, function(i) {
+    if(kk[i]>0 & kk[i]<(mult.obs-1)) t(t(sigma.rand.new%*%t(z[-k[[i]],,i]))/delta[i,-k[[i]]])%*%solve(variance.ynew[-k[[i]],-k[[i]],i]) else
+      if(kk[i]==(mult.obs-1)) t(t(sigma.rand.new%*%z[-k[[i]],,i])/delta[i,-k[[i]]])%*%solve(variance.ynew[-k[[i]],-k[[i]],i]) else 
+        t(t(sigma.rand.new%*%t(z[,,i]))/delta[i,])%*%solve(variance.ynew[,,i])},simplify=F)
+  ### list: dimension.sigma x mult.obs x individuals
+  
+  firstmomentb <- sapply(1:individuals, function(i) {
+    if(kk[i]>0 & kk[i]<(mult.obs-1)) sigmab[[i]]%*%(moments1[[i]]-mean.ynew[i,-k[[i]]]) else 
+      if(kk[i]==(mult.obs-1))    sigmab[[i]]%*%as.matrix(moments1[[i]]-mean.ynew[i,-k[[i]]])  else 
+        sigmab[[i]]%*%(moments1[[i]]-mean.ynew[i,])}, simplify=F)
+  ### list: dimension.sigma x 1 x individuals
+  ### when dimension.sigma=1: vector : individuals 
+  firstmomentb=t(do.call(cbind,firstmomentb))
+  
+  
+  #########################################################################################
+  #########################################################################################
+  #########################################################################################
+  ################ log-likelihood #########################################################
+  #########################################################################################
+  #########################################################################################
+  
+  ordinal.part <- sapply(1:individuals, function(i) log(pmvnorm(mean=mean.ynew[i,knot[[i]]],
+                                                             sigma=matrix(variance.ynew[knot[[i]],knot[[i]],i], ncol=mult.obs-kk[i]),
+                                                             lower=trunc.lower[i,knot[[i]]], upper=trunc.upper[i,knot[[i]]])),
+                      simplify="array")
+  
+  loglikelihood <- sum(ordinal.part)
+  
+  #cat("Log-likelihood: ",loglikelihood,"\n")
+  
+  ###################################################################################
+  ############## AIC and BIC ########################################################
+  ###################################################################################
+  AIC <- -2*loglikelihood+2*(length(betanew)+length(deltanew)+choose(dimension.sigma+1,2))
+  
+  BIC <- -2*loglikelihood+log(length(which(!is.na(data.ordinal))))*(length(betanew)+length(deltanew)+choose(dimension.sigma+1,2))
+  
+  
+  #cat("AIC: ",AIC,"\n")
+  #cat("BIC: ",BIC,"\n")
+  
+  #########################################################################################
+  #########################################################################################
   list(Sigma.rand.effects=sigma.rand.new,
        regression.coefficients=betanew,
        differences.in.thresholds=deltanew,
        thresholds=c(0,cumsum(deltanew)),
-#        random.effects=firstmomentb,
-#        loglikelihood=loglikelihood,
-#        AIC=AIC,
-#        BIC=BIC,
+       random.effects=firstmomentb,
+       loglikelihood=loglikelihood,
+       AIC=AIC,
+       BIC=BIC,
        number.iterations=number.it)
   
 } #function ecm.one.ordinal
