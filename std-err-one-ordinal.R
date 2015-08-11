@@ -21,7 +21,7 @@ standard.error.bootstrap.one.ordinal=function(data.ordinal,predictors.fixed,
   start.values.delta=delta.estimates
   start.values.sigma.rand=sigma.rand.estimate
   
-  l=length(data.ordinal[,1])
+  l=dim(data.ordinal)[1]
   mult.obs=ncol(data.ordinal)
   miss=is.na(data.ordinal)
   
@@ -50,10 +50,10 @@ standard.error.bootstrap.one.ordinal=function(data.ordinal,predictors.fixed,
                     start.values.sigma.rand,
                     exact=exact,
                     montecarlo,epsilon, additional=F)
-  } #forech
+  } #foreach
   
   est=t(sapply(1:bootstrap.samples, function(i) c(boot[[i]][[1]], boot[[i]][[2]],boot[[i]][[3]]), simplify=T))
-  var(est)
+  #var(est)
   
 } # function standard error
 
@@ -61,3 +61,10 @@ dada=standard.error.bootstrap.one.ordinal(data.ordinal,predictors.fixed,
                                      predictors.random, 
                                      x, exact, montecarlo, epsilon, 
                                      bootstrap.samples=5) 
+
+dada=foreach(i=1:5, .packages=c("MASS","EMcorrProbit"), .combine="rbind") %dopar%  {
+  standard.error.bootstrap.one.ordinal(data.ordinal,predictors.fixed,
+                                       predictors.random, 
+                                       x, exact, montecarlo, epsilon, 
+                                       bootstrap.samples=1)
+} 
