@@ -103,7 +103,7 @@ emcorrprobit.default <- function(y, xfixed, xrand, start.values.beta,
   
   est <- ecm.one.ordinal(y,xfixed,xrand,start.values.beta,start.values.delta,
                          start.values.sigma.rand,
-                         exact,montecarlo,epsilon)
+                         exact,montecarlo,epsilon, additional=T)
   
   
   est$call <-match.call()
@@ -189,7 +189,7 @@ print.summary.emcorrprobit <- function(x, ...)
 # }
 
 ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,start.values.beta,start.values.delta,start.values.sigma.rand,
-                         exact,montecarlo,epsilon) 
+                         exact,montecarlo,epsilon, additional) 
   {
   ########################################
   ### wide format of longitudinal data: first level denoted by 1, second - 2 and so on
@@ -453,7 +453,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
     ########################
        } # while
 
-
+  if(additional) {
   ###########################################################################
   ################### random effects
   ###########################################################################
@@ -542,7 +542,12 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   BIC <- -2*loglikelihood+log(length(which(!is.na(data.ordinal))))*(length(betanew)+length(deltanew)+choose(dimension.sigma+1,2))
   
   
-  
+  } else {
+  firstmomentb=NULL
+  loglikelihood=NULL
+  AIC=NULL
+  BIC=NULL
+  } ### if (additional) 
   #########################################################################################
   #########################################################################################
   list(Sigma.rand.effects=sigma.rand.new,
