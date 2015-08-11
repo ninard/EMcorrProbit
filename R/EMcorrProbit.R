@@ -576,10 +576,10 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
        regression.coefficients=betanew,
        differences.in.thresholds=deltanew,
        thresholds=c(0,cumsum(deltanew)),
-#       random.effects=firstmomentb,
-#       loglikelihood=loglikelihood,
-#       AIC=AIC,
-#       BIC=BIC,
+       random.effects=firstmomentb,
+       loglikelihood=loglikelihood,
+       AIC=AIC,
+       BIC=BIC,
        number.iterations=number.it)
   
 } #function ecm.one.ordinal
