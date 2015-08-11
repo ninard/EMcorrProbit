@@ -67,12 +67,6 @@ fffnew=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
                     exact=F,montecarlo=mc,epsilon=.0002)
 cat(fffnew[[1]],fffnew[[2]],fffnew[[3]])
 
-fffnew=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
-                    xrand=predictors.random,
-                    start.values.beta=beta,start.values.delta=delta,
-                    start.values.sigma.rand=sigma.rand,
-                    exact=T,montecarlo=mc,epsilon=.0002)
-cat(fffnew[[1]],fffnew[[2]],fffnew[[3]])
 
 #######################################################################
 ############################################################
