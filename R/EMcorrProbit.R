@@ -1,26 +1,26 @@
-#' Fitting Correlated Probit Model for Ordinal Data
+#' Fitting Correlated Probit Models for Ordinal Data
 #' 
-#' Maximum likelihood estimates of the parameters of correlated probit model via EM algorithm. The function works with wide format of the response data. The function allows for NA values in the outcome. 
-#' @param y 2-way array for the response with dimension: individuals x multiple observations. The ordinal data should be represented by numeric values in the following way: the first level is denoted by the number 1, second by the number 2 and so on. 
-#' @param xfixed 3-way array for the predictors for the fixed effects with dimension: individuals x dimension of the fixed effects x multiple observations. The intercept should be included as well.
-#' @param xrand 3-way array for the predictors for the random effects with dimension: individuals x dimension of the random effects x multiple observations
-#' @param exact logical. If TRUE analytical calculations of the moments of truncated normal distrubution are used, otherwise Monte Carlo approach (via random numbers generation) for estimation is used.
+#' Maximum likelihood estimation of the parameters of a correlated probit model via EM algorithm. The function works with wide format of the response data. The function allows for NA values in the outcome. 
+#' @param y 2-way array for the the response variable with dimensions: individuals and multiple observations. The ordinal data should be represented by numeric values in the following way: the first level is denoted by the number 1, second by the number 2 and so on. 
+#' @param xfixed 3-way array for the predictors for the fixed effects with dimensions: individuals, dimension of the fixed effects and multiple observations. The intercept should be included as well.
+#' @param xrand 3-way array for the predictors for the random effects with dimensions: individuals, dimension of the random effects and multiple observations
+#' @param exact logical. If TRUE analytical calculation of the moments of truncated normal distribution is obtained, otherwise a Monte Carlo approach for estimation is used.
 #' @param montecarlo numeric. The number of generated values used for the estimation of the first two moments of truncated normal distribution. If exact=T this parameter is not needed.
 #' @param start.values.delta start values for the differences in the consecutive thresholds \eqn{\delta} 
 #' @param start.values.beta start values for the regression parameters \eqn{\beta}
 #' @param start.values.sigma.rand a matrix with the start values for the covariance matrix of the random effects \eqn{\Sigma}
 #' @param epsilon a value for the stopping criterion
 #' @details The function fits the latent class probit model:
-#' \deqn{y_{ij}= x_{ij}'\beta+ z_{ij}'b_i+\epsilon_{ij},} 
-#' where we observe \eqn{y_{ij}^*=k, if y_{ij}<\alpha_k} and y_{ij}^*=m, if \eqn{y_ij>\alpha_{m-1},} where the response variable y_{ij}^* may take a value from 1 to m. We assume \eqn{b_i ~ N(0,\Sigma)} and \eqn{\epsilon_{ij} ~ N(0,1)}
+#' \deqn{y_{ij} = x'_{ij}\beta+ z'_{ij}b_i+\epsilon_{ij},}{y_ij = x'_ij*\beta+ z'_ij*b_i+\epsilon_ij,} 
+#' where we observe \eqn{y*_{ij} = k, if y_{ij} < \alpha_k} and \eqn{y*_{ij} = m}, if \eqn{y_{ij} > \alpha_{m-1},} the response variable y*_{ij} may take a value from 1 to m. We assume \eqn{b_i ~ N(0,\Sigma)} and \eqn{\epsilon_{ij} ~ N(0,1)}.
 #' 
-#' The model is fitted using reparameterisation and new parameters are defined: \eqn{\delta_k=\alpha_k-\alpha_{k-1}, k=2,...,m-1}
+#' The model is fitted using re-parametrisation where new parameters are defined: \eqn{\delta_k=\alpha_k-\alpha_{k-1}, k=2,...,m-1}
 #' 
 #' The stopping criterion of the algorithm is when the differences between the estimates from two successive iterations of the algorithm are less than \code{epsilon} for each parameter.
 #' 
-#' One should choose carefully the start values for the parameters (especially for the covariance matrix of the random effects) and the value of \code{epsilon}. It is possible the algorithm to stop before convergence and to overestimate or underestimate the parameters. We recommend using different starting values for the parameters and if the results are similar, we may assume that obtained estimates are MLEs.
+#' One should choose carefully the starting values for the parameters (especially for the covariance matrix of the random effects) and the value of \code{epsilon}. It is possible that the algorithm stops before convergence and over- or underestimate the parameters. We recommend using different starting values for the parameters and only after getting similar results, it can be assumed that obtained estimates are the MLEs.
 #' 
-#' When the data consists of 2 or 3 observations per subject we recommend using the analitycal calculation of the moments of trucated normal distribution (exact=T).
+#' When the data consists of 2 or 3 observations per subject we recommend using the analytical calculation of the moments of truncated normal distribution (\code{exact=T}).
 #' @return An object of class \code{"emcorrprobit"}. List with following components:
 #'   
 #' \item{Sigma.rand.effects}{The estimated covariance matrix of the random effects \eqn{\Sigma}}
@@ -28,7 +28,7 @@
 #' \item{differences.in.thresholds}{The estimated differences in the consecutive thresholds \eqn{\delta}}
 #' \item{thresholds}{Estimated thresholds \eqn{\alpha}. By definition the first threshold \eqn{\alpha_1} is zero}
 #' \item{random.effects}{The estimated random effects for each individual \eqn{b_i}}
-#' \item{loglikelihood}{Log-likelohood of the model}
+#' \item{loglikelihood}{Log-likelihood of the model}
 #' \item{AIC}{Akaike information criterion}
 #' \item{BIC}{Bayesian information criterion}
 #' \item{number.iterations}{The number of iterations}
@@ -81,12 +81,25 @@ emcorrprobit.default <- function(y, xfixed, xrand, start.values.beta,
                                  exact, montecarlo=100, epsilon=.001, ...)
 {
   #cat("Please, be patient, the function is working ... \n")
+  
+  #######################
+  ## check
+  ############################
+  if(!is.matrix(y)) warning("y must be a matrix")
+  if(!is.matrix(start.values.sigma.rand)) warning("start.values.sigma.rand must be a matrix")
+  if(any(sort(unique(c(y)))!=1:max(y,na.rm=T))) stop("Missing levels in the response variable.")
+  if(length(start.values.delta)!=(max(y,na.rm=T)-2)) stop("Incorrect dimension of start.values.delta.")
+  #if(exact==F & is.na(montecarlo)) {warning("montecarlo parameter undefined, 100 taken by default")
+  #montecarlo=100
+  #}
+  if(exact==F & is.na(montecarlo)) stop("montecarlo parameter undefined")
+  
   xfixed <- as.array(xfixed)
   xrand <- as.array(xrand)
   y <- as.array(y)
   
-  if (dim(xfixed)[1] != dim(xrand)[1] | dim(xrand)[1] != dim(y)[1]) print("Wrong dimensions!")
-  if (dim(xfixed)[3] != dim(xrand)[3] | dim(xrand)[3] != dim(y)[2]) print("Wrong dimensions!")
+  if (dim(xfixed)[1] != dim(xrand)[1] | dim(xrand)[1] != dim(y)[1]) stop("Incompatible dimensions!")
+  if (dim(xfixed)[3] != dim(xrand)[3] | dim(xrand)[3] != dim(y)[2]) stop("Incompatible dimensions!")
   
   est <- ecm.one.ordinal(y,xfixed,xrand,start.values.beta,start.values.delta,
                          start.values.sigma.rand,
@@ -126,16 +139,6 @@ print.emcorrprobit <- function(x, ...)
   cat("\nBIC: \n")
   cat(x$BIC,"\n")
 }
-
-#     cat(c(number.it,sigma.rand.new,betanew,deltanew,"\n"))
-#   } # while
-#   
-#   
-#   cat("Final estimates with accuracy=",epsilon," :","\n",
-#       "number of iterations: ",number.it,"\n",
-#       "sigma estimate: ",sigma.rand.new,"\n",
-#       "betanew.estimate: ",betanew,"\n")
-#   if(num.categories>2) cat("delta estimate: ",deltanew,"\n")
 
 summary.emcorrprobit <- function(x, ...)
 {
@@ -198,18 +201,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   #library(tmvtnorm)
   #library(doParallel)
   #registerDoParallel()
-  
-  
-  #######################
-  ## check
-  ############################
-  if(class(data.ordinal)!="matrix") print("Warning message: data.ordinal must be a matrix")
-  if(class(start.values.sigma.rand)!="matrix") print("Warning message: start.values.sigma.rand must be a matrix")
-  if(any(sort(unique(c(data.ordinal)))!=1:max(data.ordinal,na.rm=T))) print("Warning message: missing levels in the response variable")
-  if(length(start.values.delta)!=(max(data.ordinal,na.rm=T)-2)) print("Warning message: incorrect dimension of start.values.delta")
-  #if(exact==F & is.na(montecarlo)) {print("Warning message: montecarlo parameter isn't defined, taken by default 100")
-  #montecarlo=100
-  #}
   
   
   ##############################################################
@@ -460,17 +451,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
     ########################
     new.est <- c(sigma.rand.new,betanew,deltanew)
     ########################
-#     cat(c(number.it,sigma.rand.new,betanew,deltanew),"\n")
-
        } # while
-#   
-#   
-#   cat("Final estimates with accuracy =",epsilon," :","\n",
-#       "number of iterations: ",number.it,"\n",
-#       "sigma estimate: ",sigma.rand.new,"\n",
-#       "betanew.estimate: ",betanew,"\n")
-#   if(num.categories>2) cat("delta estimate: ",deltanew,"\n")
-  
 
 
   ###########################################################################
@@ -552,7 +533,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   
   loglikelihood <- sum(ordinal.part)
   
-  #cat("Log-likelihood: ",loglikelihood,"\n")
   
   ###################################################################################
   ############## AIC and BIC ########################################################
@@ -562,8 +542,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   BIC <- -2*loglikelihood+log(length(which(!is.na(data.ordinal))))*(length(betanew)+length(deltanew)+choose(dimension.sigma+1,2))
   
   
-  #cat("AIC: ",AIC,"\n")
-  #cat("BIC: ",BIC,"\n")
   
   #########################################################################################
   #########################################################################################
@@ -571,10 +549,10 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
        regression.coefficients=betanew,
        differences.in.thresholds=deltanew,
        thresholds=c(0,cumsum(deltanew)),
-#       random.effects=firstmomentb,
-#       loglikelihood=loglikelihood,
-#       AIC=AIC,
-#       BIC=BIC,
+       random.effects=firstmomentb,
+       loglikelihood=loglikelihood,
+       AIC=AIC,
+       BIC=BIC,
        number.iterations=number.it)
   
 } #function ecm.one.ordinal
