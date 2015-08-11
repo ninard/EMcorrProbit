@@ -329,7 +329,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
       for(i in 2:mult.obs) pred.beta <- rbind(pred.beta,predictors.fixed[,,i])
       betanew <- lm(c(ywave)~pred.beta-1)$coef 
       rm(pred.beta)}
-    #print(betanew)
     
     ############ update
     
@@ -380,7 +379,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
           z[knot[[i]],,i]*as.vector(second2[[i]]) )  else
             second2 <- sapply(1:individuals, function(i) diag(z[knot[[i]],,i]%*%second2[[i]]))
         
-        second2new <- array(NA, dim=c(l,mult.obs))
+        second2new <- array(NA, dim=c(individuals,mult.obs))
         for(i in 1:individuals) second2new[i,knot[[i]]] <- second2[[i]]
         
         
@@ -392,8 +391,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
         c <- -n[(delta.index+1)]
         
         deltanew[delta.index] <- (b+sqrt(b^2-4*a*c))/(2*a) 
-        #print(deltanew[delta.index])
-        
         
         #################### update
         
@@ -446,8 +443,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
     
     if(dimension.sigma==1) sigma.rand.new <- matrix(mean(sigma.rand)) else {sigma.rand.new <- matrix(apply(sigma.rand,1,mean), ncol=dimension.sigma)
                                                                             sigma.rand.new[lower.tri(sigma.rand.new)]  <-  t(sigma.rand.new)[lower.tri(sigma.rand.new)] }
-    #print(sigma.rand.new)
-    
     ########################
     new.est <- c(sigma.rand.new,betanew,deltanew)
     ########################
