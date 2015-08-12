@@ -1,26 +1,26 @@
-#' Fitting Correlated Probit Model for Ordinal Data
+#' Fitting Correlated Probit Models for Ordinal Data
 #' 
-#' Maximum likelihood estimates of the parameters of correlated probit model via EM algorithm. The function works with wide format of the response data. The function allows for NA values in the outcome. 
-#' @param y 2-way array for the response with dimension: individuals x multiple observations. The ordinal data should be represented by numeric values in the following way: the first level is denoted by the number 1, second by the number 2 and so on. 
-#' @param xfixed 3-way array for the predictors for the fixed effects with dimension: individuals x dimension of the fixed effects x multiple observations. The intercept should be included as well.
-#' @param xrand 3-way array for the predictors for the random effects with dimension: individuals x dimension of the random effects x multiple observations
-#' @param exact logical. If TRUE analytical calculations of the moments of truncated normal distrubution are used, otherwise Monte Carlo approach (via random numbers generation) for estimation is used.
+#' Maximum likelihood estimation of the parameters of a correlated probit model via EM algorithm. The function works with wide format of the response data. The function allows for NA values in the outcome. 
+#' @param y 2-way array for the the response variable with dimensions: individuals and multiple observations. The ordinal data should be represented by numeric values in the following way: the first level is denoted by the number 1, second by the number 2 and so on. 
+#' @param xfixed 3-way array for the predictors for the fixed effects with dimensions: individuals, dimension of the fixed effects and multiple observations. The intercept should be included as well.
+#' @param xrand 3-way array for the predictors for the random effects with dimensions: individuals, dimension of the random effects and multiple observations
+#' @param exact logical. If TRUE analytical calculation of the moments of truncated normal distribution is obtained, otherwise a Monte Carlo approach for estimation is used.
 #' @param montecarlo numeric. The number of generated values used for the estimation of the first two moments of truncated normal distribution. If exact=T this parameter is not needed.
 #' @param start.values.delta start values for the differences in the consecutive thresholds \eqn{\delta} 
 #' @param start.values.beta start values for the regression parameters \eqn{\beta}
 #' @param start.values.sigma.rand a matrix with the start values for the covariance matrix of the random effects \eqn{\Sigma}
 #' @param epsilon a value for the stopping criterion
 #' @details The function fits the latent class probit model:
-#' \deqn{y_{ij}= x_{ij}'\beta+ z_{ij}'b_i+\epsilon_{ij},} 
-#' where we observe \eqn{y_{ij}^*=k, if y_{ij}<\alpha_k} and y_{ij}^*=m, if \eqn{y_ij>\alpha_{m-1},} where the response variable y_{ij}^* may take a value from 1 to m. We assume \eqn{b_i ~ N(0,\Sigma)} and \eqn{\epsilon_{ij} ~ N(0,1)}
+#' \deqn{y_{ij} = x'_{ij}\beta+ z'_{ij}b_i+\epsilon_{ij},}{y_ij = x'_ij*\beta+ z'_ij*b_i+\epsilon_ij,} 
+#' where we observe \eqn{y*_{ij} = k, if y_{ij} < \alpha_k} and \eqn{y*_{ij} = m}, if \eqn{y_{ij} > \alpha_{m-1},} the response variable y*_{ij} may take a value from 1 to m. We assume \eqn{b_i ~ N(0,\Sigma)} and \eqn{\epsilon_{ij} ~ N(0,1)}.
 #' 
-#' The model is fitted using reparameterisation and new parameters are defined: \eqn{\delta_k=\alpha_k-\alpha_{k-1}, k=2,...,m-1}
+#' The model is fitted using re-parametrisation where new parameters are defined: \eqn{\delta_k=\alpha_k-\alpha_{k-1}, k=2,...,m-1}
 #' 
 #' The stopping criterion of the algorithm is when the differences between the estimates from two successive iterations of the algorithm are less than \code{epsilon} for each parameter.
 #' 
-#' One should choose carefully the start values for the parameters (especially for the covariance matrix of the random effects) and the value of \code{epsilon}. It is possible the algorithm to stop before convergence and to overestimate or underestimate the parameters. We recommend using different starting values for the parameters and if the results are similar, we may assume that obtained estimates are MLEs.
+#' One should choose carefully the starting values for the parameters (especially for the covariance matrix of the random effects) and the value of \code{epsilon}. It is possible that the algorithm stops before convergence and over- or underestimate the parameters. We recommend using different starting values for the parameters and only after getting similar results, it can be assumed that obtained estimates are the MLEs.
 #' 
-#' When the data consists of 2 or 3 observations per subject we recommend using the analitycal calculation of the moments of trucated normal distribution (exact=T).
+#' When the data consists of 2 or 3 observations per subject we recommend using the analytical calculation of the moments of truncated normal distribution (\code{exact=T}).
 #' @return An object of class \code{"emcorrprobit"}. List with following components:
 #'   
 #' \item{Sigma.rand.effects}{The estimated covariance matrix of the random effects \eqn{\Sigma}}
@@ -28,7 +28,7 @@
 #' \item{differences.in.thresholds}{The estimated differences in the consecutive thresholds \eqn{\delta}}
 #' \item{thresholds}{Estimated thresholds \eqn{\alpha}. By definition the first threshold \eqn{\alpha_1} is zero}
 #' \item{random.effects}{The estimated random effects for each individual \eqn{b_i}}
-#' \item{loglikelihood}{Log-likelohood of the model}
+#' \item{loglikelihood}{Log-likelihood of the model}
 #' \item{AIC}{Akaike information criterion}
 #' \item{BIC}{Bayesian information criterion}
 #' \item{number.iterations}{The number of iterations}
@@ -81,12 +81,25 @@ emcorrprobit.default <- function(y, xfixed, xrand, start.values.beta,
                                  exact, montecarlo=100, epsilon=.001, ...)
 {
   #cat("Please, be patient, the function is working ... \n")
+  
+  #######################
+  ## check
+  ############################
+  if(!is.matrix(y)) warning("y must be a matrix")
+  if(!is.matrix(start.values.sigma.rand)) warning("start.values.sigma.rand must be a matrix")
+  if(any(sort(unique(c(y)))!=1:max(y,na.rm=T))) stop("Missing levels in the response variable.")
+  if(length(start.values.delta)!=(max(y,na.rm=T)-2)) stop("Incorrect dimension of start.values.delta.")
+  #if(exact==F & is.na(montecarlo)) {warning("montecarlo parameter undefined, 100 taken by default")
+  #montecarlo=100
+  #}
+  if(exact==F & is.na(montecarlo)) stop("montecarlo parameter undefined")
+  
   xfixed <- as.array(xfixed)
   xrand <- as.array(xrand)
   y <- as.array(y)
   
-  if (dim(xfixed)[1] != dim(xrand)[1] | dim(xrand)[1] != dim(y)[1]) print("Wrong dimensions!")
-  if (dim(xfixed)[3] != dim(xrand)[3] | dim(xrand)[3] != dim(y)[2]) print("Wrong dimensions!")
+  if (dim(xfixed)[1] != dim(xrand)[1] | dim(xrand)[1] != dim(y)[1]) stop("Incompatible dimensions!")
+  if (dim(xfixed)[3] != dim(xrand)[3] | dim(xrand)[3] != dim(y)[2]) stop("Incompatible dimensions!")
   
   est <- ecm.one.ordinal(y,xfixed,xrand,start.values.beta,start.values.delta,
                          start.values.sigma.rand,
@@ -106,14 +119,14 @@ print.emcorrprobit <- function(x, ...)
   cat("Call: \n")
   print(x$call)
   cat("\nNumber of iterations: ",x$number.it,"\n")
+  cat("\nCovariance matrix of the random effects: \n")
+  print(x$Sigma.rand.effects)
   cat("\nRegression coefficients: \n")
   cat(x$regression.coefficients,"\n")
   if(length(x$differences.in.thresholds)>0) 
     {cat("\nDifferences in thresholds: \n")
      cat(x$differences.in.thresholds,"\n")
     } 
-  cat("\nCovariance matrix of the random effects: \n")
-  print(x$Sigma.rand.effects)
   cat("\nThresholds: \n")
   cat(x$thresholds,"\n")
   cat("\nRandom efects: \n")
@@ -127,37 +140,51 @@ print.emcorrprobit <- function(x, ...)
   cat(x$BIC,"\n")
 }
 
-#     cat(c(number.it,sigma.rand.new,betanew,deltanew,"\n"))
-#   } # while
-#   
-#   
-#   cat("Final estimates with accuracy=",epsilon," :","\n",
-#       "number of iterations: ",number.it,"\n",
-#       "sigma estimate: ",sigma.rand.new,"\n",
-#       "betanew.estimate: ",betanew,"\n")
-#   if(num.categories>2) cat("delta estimate: ",deltanew,"\n")
-
 summary.emcorrprobit <- function(x, ...)
-{
-  se.regr.coeff = rep(NA, length(x$regression.coefficients))
+{ cat(" Please, be very patient ... \n")
+  vcov <- standard.error.bootstrap.one.ordinal(x, ...) 
+  
+  se <- sqrt(diag(vcov))
+  
+  se.sigma <- matrix(se[1:length(x$Sigma.rand.effects)],
+                     ncol=sqrt(length(x$Sigma.rand.effects)))
+  
+  se.sigma <- se.sigma[lower.tri(se.sigma,diag=T)]
+  
+  TAB.sigma <- cbind(Sigma= x$Sigma.rand.effects[lower.tri(x$Sigma.rand.effects,diag=T)], 
+                    StdErr = se.sigma,
+                    z.score=x$Sigma.rand.effects[lower.tri(x$Sigma.rand.effects,diag=T)]/se.sigma)
+  nam <- matrix(paste("sigma ", outer(1:dim(x$Sigma.rand.effects),1:dim(x$Sigma.rand.effects),
+                                  function(x,y) paste(x,y,sep="")),sep=""),ncol=dim(x$Sigma.rand.effects))
+  nam <- nam[lower.tri(nam,diag=T)]
+  rownames(TAB.sigma)=nam
+  
+  
+  se.regr.coeff <- se[(length(x$Sigma.rand.effects)+1):
+                        (length(x$Sigma.rand.effects)+length(x$regression.coefficients))]
   
   TAB.regr.coeff <- cbind(Regression.coeff= x$regression.coefficients, 
-               StdErr = se.regr.coeff)
+               StdErr = se.regr.coeff,
+               z.score = x$regression.coefficients/se.regr.coeff,
+               p.value = 2*pnorm(abs(x$regression.coefficients/se.regr.coeff), lower=F))
   rownames(TAB.regr.coeff)=paste("Predictor",1:length(x$regression.coefficients))
     
   if(length(x$differences.in.thresholds)>0)
     
-  {se.diff.thresholds = rep(NA, length(x$differences.in.thresholds))
+  {se.diff.thresholds =se[(length(se)-length(x$differences.in.thresholds)+1):length(se)]
   
   TAB.diff.thresholds <- cbind(Threshold.differences= x$differences.in.thresholds, 
-               StdErr = se.diff.thresholds)
+               StdErr = se.diff.thresholds,
+               z.score = x$differences.in.thresholds/se.diff.thresholds,
+               p.value = 2*pnorm(abs(x$differences.in.thresholds/se.diff.thresholds), lower=F))
   rownames(TAB.diff.thresholds)=paste("Diff",1:length(x$differences.in.thresholds))
   } else TAB.diff.thresholds=NULL
   
   res <- list(call = x$call, 
               regr.coefficients = TAB.regr.coeff,
-              diff.thresholds=TAB.diff.thresholds
-              )
+              diff.thresholds=TAB.diff.thresholds,
+              sigma=TAB.sigma,
+              vcov=vcov)
   
   class(res) <- "summary.emcorrprobit"
   res
@@ -169,8 +196,12 @@ print.summary.emcorrprobit <- function(x, ...)
   print(x$call)
   cat("\n")
   
-  printCoefmat(x$regr.coefficients)
-  printCoefmat(x$diff.thresholds)
+  printCoefmat(x$sigma)
+  cat("\n")
+  printCoefmat(x$regr.coefficients,P.values=T, has.Pvalue=T)
+  cat("\n")
+  printCoefmat(x$diff.thresholds,P.values=T, has.Pvalue=T)
+  
 }
 
 # formula.emcorrprobit <- function(formula, data=list(), ...)
@@ -198,18 +229,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   #library(tmvtnorm)
   #library(doParallel)
   #registerDoParallel()
-  
-  
-  #######################
-  ## check
-  ############################
-  if(class(data.ordinal)!="matrix") print("Warning message: data.ordinal must be a matrix")
-  if(class(start.values.sigma.rand)!="matrix") print("Warning message: start.values.sigma.rand must be a matrix")
-  if(any(sort(unique(c(data.ordinal)))!=1:max(data.ordinal,na.rm=T))) print("Warning message: missing levels in the response variable")
-  if(length(start.values.delta)!=(max(data.ordinal,na.rm=T)-2)) print("Warning message: incorrect dimension of start.values.delta")
-  #if(exact==F & is.na(montecarlo)) {print("Warning message: montecarlo parameter isn't defined, taken by default 100")
-  #montecarlo=100
-  #}
   
   
   ##############################################################
@@ -338,7 +357,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
       for(i in 2:mult.obs) pred.beta <- rbind(pred.beta,predictors.fixed[,,i])
       betanew <- lm(c(ywave)~pred.beta-1)$coef 
       rm(pred.beta)}
-    #print(betanew)
     
     ############ update
     
@@ -389,7 +407,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
           z[knot[[i]],,i]*as.vector(second2[[i]]) )  else
             second2 <- sapply(1:individuals, function(i) diag(z[knot[[i]],,i]%*%second2[[i]]))
         
-        second2new <- array(NA, dim=c(l,mult.obs))
+        second2new <- array(NA, dim=c(individuals,mult.obs))
         for(i in 1:individuals) second2new[i,knot[[i]]] <- second2[[i]]
         
         
@@ -401,8 +419,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
         c <- -n[(delta.index+1)]
         
         deltanew[delta.index] <- (b+sqrt(b^2-4*a*c))/(2*a) 
-        #print(deltanew[delta.index])
-        
         
         #################### update
         
@@ -455,22 +471,10 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
     
     if(dimension.sigma==1) sigma.rand.new <- matrix(mean(sigma.rand)) else {sigma.rand.new <- matrix(apply(sigma.rand,1,mean), ncol=dimension.sigma)
                                                                             sigma.rand.new[lower.tri(sigma.rand.new)]  <-  t(sigma.rand.new)[lower.tri(sigma.rand.new)] }
-    #print(sigma.rand.new)
-    
     ########################
     new.est <- c(sigma.rand.new,betanew,deltanew)
     ########################
-#     cat(c(number.it,sigma.rand.new,betanew,deltanew),"\n")
-
        } # while
-#   
-#   
-#   cat("Final estimates with accuracy =",epsilon," :","\n",
-#       "number of iterations: ",number.it,"\n",
-#       "sigma estimate: ",sigma.rand.new,"\n",
-#       "betanew.estimate: ",betanew,"\n")
-#   if(num.categories>2) cat("delta estimate: ",deltanew,"\n")
-  
 
   if(additional) {
   ###########################################################################
@@ -552,7 +556,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   
   loglikelihood <- sum(ordinal.part)
   
-  #cat("Log-likelihood: ",loglikelihood,"\n")
   
   ###################################################################################
   ############## AIC and BIC ########################################################
@@ -562,14 +565,15 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   BIC <- -2*loglikelihood+log(length(which(!is.na(data.ordinal))))*(length(betanew)+length(deltanew)+choose(dimension.sigma+1,2))
   
   
-  #cat("AIC: ",AIC,"\n")
-  #cat("BIC: ",BIC,"\n")
   } else {
   firstmomentb=NULL
   loglikelihood=NULL
   AIC=NULL
   BIC=NULL
   } ### if (additional) 
+
+ rownames(sigma.rand.new) <- paste("sigma ", 1:dimension.sigma, ".", sep="")
+ colnames(sigma.rand.new) <- paste("sigma .", 1:dimension.sigma, sep="")
   #########################################################################################
   #########################################################################################
   list(Sigma.rand.effects=sigma.rand.new,
@@ -580,6 +584,80 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
        loglikelihood=loglikelihood,
        AIC=AIC,
        BIC=BIC,
-       number.iterations=number.it)
+       number.iterations=number.it,
+       data.ordinal=data.ordinal,
+       predictors.fixed=predictors.fixed,
+       predictors.random=predictors.random,
+       exact=exact,
+       montecarlo=montecarlo,
+       epsilon=epsilon)
   
 } #function ecm.one.ordinal
+
+
+standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples, 
+                                              doParallel, cores=NULL) {
+  beta.estimate=x$regression.coefficients
+  delta.estimates=x$differences.in.thresholds
+  sigma.rand.estimate=x$Sigma.rand.effects
+  
+  start.values.beta=beta.estimate
+  start.values.delta=delta.estimates
+  start.values.sigma.rand=sigma.rand.estimate
+  
+  l=dim(x$data.ordinal)[1]
+  mult.obs=ncol(x$data.ordinal)
+  miss=is.na(x$data.ordinal)
+  
+  if(doParallel) {if (length(cores)>0) registerDoParallel(cores=cores) else registerDoParallel()
+                  boot=foreach(i=1:bootstrap.samples, .packages=c("MASS","EMcorrProbit","tmvtnorm")) %dopar% {
+                    
+                    random.int=mvrnorm(n=l, mu=rep(0,ncol(sigma.rand.estimate)), Sigma=sigma.rand.estimate)
+                    
+                    pred.fixed=sapply(1:mult.obs,function(obs) as.matrix(x$predictors.fixed[,,obs])%*%beta.estimate, simplify=T)
+                    if(ncol(sigma.rand.estimate)==1) pred.rand=sapply(1:mult.obs,function(obs) x$predictors.random[,,obs]*random.int,simplify=T) else
+                      pred.rand=sapply(1:mult.obs,function(obs) apply(x$predictors.random[,,obs]*random.int,1,sum),simplify=T)
+                    
+                    y1=pred.fixed+pred.rand+matrix(rnorm(l*mult.obs),ncol=mult.obs)
+                    
+                    data.ordinal.new=matrix(cut(y1,c(min(y1)-1,x$thresholds,max(y1)+1), labels=F),ncol=mult.obs)
+                    data.ordinal.new=ifelse(miss==T, NA, data.ordinal.new)
+                    
+                    ecm.one.ordinal(data.ordinal.new,x$predictors.fixed,
+                                    x$predictors.random,start.values.beta,
+                                    start.values.delta,start.values.sigma.rand,
+                                    exact=x$exact,montecarlo=x$montecarlo,epsilon=x$epsilon*50, additional=F)
+                  } #foreach
+  } else {boot=list(NA)
+          
+          for(i in 1:bootstrap.samples) {
+            random.int=mvrnorm(n=l, mu=rep(0,ncol(sigma.rand.estimate)), Sigma=sigma.rand.estimate)
+            
+            pred.fixed=sapply(1:mult.obs,function(obs) as.matrix(x$predictors.fixed[,,obs])%*%beta.estimate, simplify=T)
+            if(ncol(sigma.rand.estimate)==1) pred.rand=sapply(1:mult.obs,function(obs) x$predictors.random[,,obs]*random.int, simplify=T) else
+              pred.rand=sapply(1:mult.obs,function(obs) apply(x$predictors.random[,,obs]*random.int,1,sum),simplify="array")
+            
+            y1=pred.fixed+pred.rand+matrix(rnorm(l*mult.obs),ncol=mult.obs)
+            
+            data.ordinal.new=matrix(cut(y1,c(min(y1)-1,x$thresholds,max(y1)+1), labels=F),ncol=mult.obs)
+            data.ordinal.new=ifelse(miss==T, NA, data.ordinal.new)
+            
+            boot[[i]]=ecm.one.ordinal(data.ordinal.new,x$predictors.fixed,
+                                      x$predictors.random,start.values.beta,
+                                      start.values.delta,start.values.sigma.rand,
+                                      exact=x$exact,montecarlo=x$montecarlo,epsilon=x$epsilon*50, additional=F)
+            
+          }  #for
+  } #else  
+  est=t(sapply(1:bootstrap.samples, function(i) c(boot[[i]][[1]], boot[[i]][[2]],boot[[i]][[3]]), simplify=T))
+  res=var(est)
+  colnames(res)=c(paste("sigma ",outer(1:dim(sigma.rand.estimate),1:dim(sigma.rand.estimate),function(x,y) paste(x,y,sep="")),sep=""),
+                  paste("Predictor",1:length(beta.estimate)), paste("Diff",1:length(delta.estimates)))
+  rownames(res)=c(paste("sigma ",outer(1:dim(sigma.rand.estimate),1:dim(sigma.rand.estimate),function(x,y) paste(x,y,sep="")),sep=""),
+                  paste("Predictor",1:length(beta.estimate)), paste("Diff",1:length(delta.estimates)))
+  res
+} # function standard error
+
+
+
+

@@ -29,6 +29,20 @@ fffnew=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
 fffnew
 cat(fffnew[[1]],fffnew[[2]],fffnew[[3]])
 
+aaa=summary(fffnew, doParallel=F, bootstrap.samples=5)
+aaa
+aaa$vcov
+
+library(doParallel)
+aaa1=summary(fffnew, bootstrap.samples=10, doParallel=T)
+aaa1
+aaa1$vcov
+
+aaa1=summary(fffnew, bootstrap.samples=50, doParallel=T)
+aaa1
+aaa1$vcov
+
+
 
 fffnew=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
                     xrand=predictors.random,
@@ -152,16 +166,25 @@ start.values.beta=c(0.5,1,2,-2.5)
 start.values.delta=c(1.5,1.5,1)
 start.values.sigma.rand=matrix(c(0.01,0.0005,0.0005,0.0001),ncol=2)
 
-montecarlo=150
+montecarlo=100
 exact=F
 
 
 a=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
                xrand=predictors.random,
                start.values.beta,start.values.delta,start.values.sigma.rand,
-               exact=exact,montecarlo=montecarlo,epsilon=.005)
+               exact=F,montecarlo=100,epsilon=.005)
+
+a
 
 cat(a[[1]],a[[2]],a[[3]])
+
+library(doParallel)
+aaa1=summary(a, bootstrap.samples=50, doParallel=T)
+aaa1
+aaa1$vcov
+
+
 
 fffcm=ecm.one.ordinal.complete.cases(data.ordinal,predictors.fixed,
                                      predictors.random,
