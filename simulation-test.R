@@ -26,7 +26,7 @@ fffnew=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
                     start.values.beta=beta,start.values.delta=delta,
                     start.values.sigma.rand=sigma.rand,
                     exact=e,montecarlo=mc,epsilon=.0002)
-#fffnew
+fffnew
 cat(fffnew[[1]],fffnew[[2]],fffnew[[3]])
 
 
@@ -129,7 +129,7 @@ cat(fffnew[[1]],fffnew[[2]],fffnew[[3]])
 ########### RIAS model, 4 predictors, 5-level ordinal variable ######
 ### 2500 individuals - 10 observations per subject ##################
 #####################################################################
-rm(lis=ls())
+rm(list=ls())
 library(MASS)
 l=2500
 mult.obs=10
@@ -152,14 +152,14 @@ start.values.beta=c(0.5,1,2,-2.5)
 start.values.delta=c(1.5,1.5,1)
 start.values.sigma.rand=matrix(c(0.01,0.0005,0.0005,0.0001),ncol=2)
 
-montecarlo=100
+montecarlo=150
 exact=F
 
 
 a=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
                xrand=predictors.random,
                start.values.beta,start.values.delta,start.values.sigma.rand,
-               exact=F,montecarlo=100,epsilon=.005)
+               exact=exact,montecarlo=montecarlo,epsilon=.005)
 
 cat(a[[1]],a[[2]],a[[3]])
 
