@@ -7,10 +7,4 @@ Author: Denitsa Grigorova, Nina Daskalova
 Maintainer: Denitsa Grigorova <dpgrigorova@abv.bg>
 Description: Maximum likelihood estimation of correlated probit models for longitudinal or clustered ordinal data via EM algorithm... and more and more
 License: GPL-2
-<<<<<<< HEAD
 Depends: MASS, tmvtnorm, doParallel
-||||||| merged common ancestors
-Depends: MASS, tmvtnorm
-=======
-Depends: MASS, tmvtnorm, doParallel
->>>>>>> d1cbe0562cde173cae219fa9e965b057ac2b4925
