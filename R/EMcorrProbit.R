@@ -74,7 +74,22 @@
 #'                    exact=e,montecarlo=mc,epsilon=.0001)
 #' print(example.missings)
 
-emcorrprobit <- function(y, ...) UseMethod("emcorrprobit")
+emcorrprobit <- function(model, y, xfixed, xrand, start.values.beta, 
+                         start.values.delta=NULL,  start.values.sigma.rand, 
+                         exact, montecarlo=100, epsilon=.001, ...)
+{
+  obj <- list(model = model, y=y, xfixed=xfixed, xrand=xrand, 
+              start.values.beta=start.values.beta, 
+              start.values.delta=start.values.delta,  
+              start.values.sigma.rand=start.values.sigma.rand, 
+              exact=exact, montecarlo=montecarlo, epsilon=epsilon, ...)
+  obj$call <-match.call()
+  class(obj) <- c(model)
+  emcorrprobitFit(obj)
+}
+
+emcorrprobitFit <- function(obj, ...) UseMethod("emcorrprobitFit")
+
 
 emcorrprobit.default <- function(y, xfixed, xrand, start.values.beta, 
                                  start.values.delta=NULL,  start.values.sigma.rand, 
@@ -106,7 +121,7 @@ emcorrprobit.default <- function(y, xfixed, xrand, start.values.beta,
                          exact,montecarlo,epsilon, additional=T)
   
   
-  est$call <-match.call()
+  est$call <- obj$call
   
  # cat("It's ready! Use print or summary to see the result.\n")
   
@@ -595,8 +610,10 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
 } #function ecm.one.ordinal
 
 
-standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples, 
-                                              doParallel, cores=NULL) {
+
+standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 50, 
+                                              doParallel = FALSE, cores=NULL) {
+
   beta.estimate=x$regression.coefficients
   delta.estimates=x$differences.in.thresholds
   sigma.rand.estimate=x$Sigma.rand.effects
