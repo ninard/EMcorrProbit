@@ -118,6 +118,7 @@ emcorrprobit <- function(model, y, xfixed, xrand, start.values.beta,
               start.values.delta=start.values.delta,  
               start.values.sigma.rand=start.values.sigma.rand, 
               exact=exact, montecarlo=montecarlo, epsilon=epsilon, ...)
+  obj$call <-match.call()
   class(obj) <- c(model)
   emcorrprobitFit(obj)
 }
@@ -167,7 +168,7 @@ emcorrprobitFit.oneord <- function(obj, ...)
                          exact,montecarlo,epsilon, additional=T)
   
   
-  est$call <-match.call()
+  est$call <- obj$call
   
  # cat("It's ready! Use print or summary to see the result.\n")
   
@@ -673,7 +674,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
 } #function ecm.one.ordinal
 
 
-standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 10, 
+standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 50, 
                                               doParallel = FALSE, cores=NULL) {
   beta.estimate=x$regression.coefficients
   delta.estimates=x$differences.in.thresholds
