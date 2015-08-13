@@ -21,6 +21,21 @@ delta=c(1.5)
 mc=500
 e=T
 
+#should work
+fffnew1=emcorrprobit(model = "oneord", y=data.ordinal,xfixed=predictors.fixed,
+                    xrand=predictors.random,
+                    start.values.beta=beta,start.values.delta=delta,
+                    start.values.sigma.rand=sigma.rand,
+                    exact=e,montecarlo=mc,epsilon=.0002)
+
+#doesn't work
+fffnew1=emcorrprobit(model = "1ord", y=data.ordinal,xfixed=predictors.fixed,
+                    xrand=predictors.random,
+                    start.values.beta=beta,start.values.delta=delta,
+                    start.values.sigma.rand=sigma.rand,
+                    exact=e,montecarlo=mc,epsilon=.0002)
+
+
 fffnew=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
                     xrand=predictors.random,
                     start.values.beta=beta,start.values.delta=delta,
