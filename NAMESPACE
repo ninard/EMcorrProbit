@@ -1,1 +1,9 @@
 exportPattern("^[[:alpha:]]+")
+
+import(MASS) 
+import(tmvtnorm)
+import(doParallel)
+import(mvtnorm)
+import(foreach)
+
+
