@@ -5,11 +5,11 @@
 Maximum likelihood estimation of correlated probit models via EM algorithm
 }
 \description{
-The package is designed for maximum likelihood estimation of correlated probit models especially for ordinal longitudinal or clustered data. The fitting approach is EM algorithm. Two main functions are implemented. 
+The package is designed for maximum likelihood estimation of correlated probit models, especially for ordinal longitudinal or clustered data. The fitting approach is EM algorithm. Two main functions are implemented. 
 
-The first main function \code{emcorrprobit} provides estimates of the parameters of the model, random effects, log-likelihood, AIC and BIC.
+Function \code{emcorrprobit} provides estimates of the parameters of the model, random effects, log-likelihood, AIC and BIC.
 
-The second main function \code{summary} provides standard error estimation via bootstrap method. 
+The \code{summary} method provides standard error estimation via bootstrap method. 
 }
 \details{
 \tabular{ll}{
@@ -19,9 +19,9 @@ Version: \tab 1.0\cr
 Date: \tab 2015-08-21\cr
 License: \tab GPL-2\cr
 }
-First main parameter in the \code{emcorrprobit} function is the \code{model} parameter. For the present moment only correlated probit model for one longitudinal ordinal variable is implemented (\code{model="oneord"}). We plan to extend the function to estimation of joint model for two longitudinal ordinal variables and joint model for one longitudinal ordinal and continuous variables. For more details see \code{\link{emcorrprobit}}.
+First main parameter in the \code{emcorrprobit} function is the \code{model} parameter. For the present moment only correlated probit model for one longitudinal ordinal variable is implemented (\code{model="oneord"}). Joint model for two longitudinal ordinal variables and joint model for one longitudinal ordinal and continuous variables will be added. For more details see \code{\link{emcorrprobit}}.
 
-The \code{summary} function allows for parallel computation which is faster. The \code{doParallel} parameter should be set to \code{TRUE}. The recommended number of bootstrap samples is between 50 and 100. For more details see \code{\link{summary}}.
+The \code{summary} function allows for parallel computation which is faster. The \code{doParallel} parameter should be set to \code{TRUE}. The recommended number of bootstrap samples is between 50 and 100. For more details see \code{\link{summary.emcorrprobit}}.
 
 }
 \author{
@@ -45,8 +45,8 @@ Pliska Stud. Math. Bulgar., 22:41-56, 2013
 ~~ the R documentation directory ~~
 package }
 \seealso{
-\code{\link[tmvtnorm:tmvtnorm-package]{tmvtnorm}}
 \code{\link[doParallel:doParallel-package]{doParallel}}
+\code{\link[tmvtnorm:rtmvnorm]{rmvtnorm}}
 }
 \examples{
 ### data simulation
