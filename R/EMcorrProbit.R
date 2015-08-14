@@ -4,6 +4,7 @@
 #' via EM algorithm. The function works with wide format of the response data. 
 #' The function allows for NA values in the outcome. 
 #' @param model specifies the response model; \code{"oneord"} is defined 
+#' for a one ordinal response variable 
 #' @param y 2-way array for the the response variable with dimensions: 
 #' individuals and multiple observations. The ordinal data should be 
 #' represented by numeric values in the following way: the first level is 
@@ -13,7 +14,7 @@
 #' observations. The intercept should be included as well.
 #' @param xrand 3-way array for the predictors for the random effects with 
 #' dimensions: individuals, dimension of the random effects and multiple 
-#' observations
+#' observations.
 #' @param exact logical; if TRUE analytical calculation of the moments of 
 #' truncated normal distribution is obtained, otherwise a Monte Carlo approach 
 #' for estimation is used.
@@ -29,13 +30,13 @@
 #' @param epsilon a value for the stopping criterion
 #' @details The function fits the latent class probit model:
 #' \deqn{y_{ij} = x'_{ij}\beta+ z'_{ij}b_i+\epsilon_{ij},}{y_ij = x'_ij*\beta+ z'_ij*b_i+\epsilon_ij,} 
-#' where we observe \eqn{y*_{ij} = k, if y_{ij} < \alpha_k} and 
+#' where \eqn{y*_{ij} = k is observed, if y_{ij} < \alpha_k} and 
 #' \eqn{y*_{ij} = m}, if \eqn{y_{ij} > \alpha_{m-1},} the response variable 
 #' y*_{ij} may take a value from 1 to m. We assume \eqn{b_i ~ N(0,\Sigma)} and 
 #' \eqn{\epsilon_{ij} ~ N(0,1)}.
 #' 
-#' The model is fitted using re-parametrisation where new parameters are defined: 
-#' \eqn{\delta_k=\alpha_k-\alpha_{k-1}, k=2,...,m-1}
+#' The model is fitted using re-parametrisation where new parameters are defined as: 
+#' \eqn{\delta_k=\alpha_k-\alpha_{k-1}, k=2,...,m-1}.
 #' 
 #' The stopping criterion of the algorithm is when the differences between the 
 #' estimates from two successive iterations of the algorithm are less than 
@@ -48,23 +49,23 @@
 #' the parameters and only after getting similar results, it can be assumed that 
 #' obtained estimates are the MLEs.
 #' 
-#' When the data consists of 2 or 3 observations per subject we recommend using the 
+#' When the data consists of 2 or 3 observations per subject it is recommended using the 
 #' analytical calculation of the moments of truncated normal distribution 
 #' (\code{exact=T}).
-#' @return An object of class \code{"emcorrprobit"}. List with following components:
+#' @return An object of class \code{emcorrprobit}. List with following components:
 #'   
-#' \item{Sigma.rand.effects}{The estimated covariance matrix of the random effects 
-#' \eqn{\Sigma}}
-#' \item{regression.coefficients}{The estimated regression coefficients \eqn{\beta}}
+#' \item{Sigma.rand.effects}{The estimated covariance matrix of the random effects
+#' \eqn{\Sigma}.}
+#' \item{regression.coefficients}{The estimated regression coefficients \eqn{\beta}.}
 #' \item{differences.in.thresholds}{The estimated differences in the consecutive 
-#' thresholds \eqn{\delta}}
+#' thresholds \eqn{\delta}.}
 #' \item{thresholds}{Estimated thresholds \eqn{\alpha}. By definition the first 
-#' threshold \eqn{\alpha_1} is zero}
-#' \item{random.effects}{The estimated random effects for each individual \eqn{b_i}}
-#' \item{loglikelihood}{Log-likelihood of the model}
-#' \item{AIC}{Akaike information criterion}
-#' \item{BIC}{Bayesian information criterion}
-#' \item{number.iterations}{The number of iterations}
+#' threshold \eqn{\alpha_1} is zero.}
+#' \item{random.effects}{The estimated random effects for each individual \eqn{b_i}.}
+#' \item{loglikelihood}{Log-likelihood of the model.}
+#' \item{AIC}{Akaike information criterion.}
+#' \item{BIC}{Bayesian information criterion.}
+#' \item{number.iterations}{The number of iterations.}
 #' @examples
 #' ### data simulation
 #' ############################################################
@@ -205,19 +206,33 @@ print.emcorrprobit <- function(x, ...)
 #' Summarizing an EMcorrProbit fit
 #' 
 #' \code{summary} of an emcorrprobit object
-#' @param bootstrap.samples 
-#' @param doParallel
-#' @param cores the number of cores used in parallel computation, if NULL ...
-#' @details print.summary.emcorrprobit tries to be smart about 
-#' formatting the coefficients, standard errors, etc.
+#' @param x an \code{\link[EMcorrProbit:emcorrprobit]{emcorrprobit}} object
+#' @param bootstrap.samples the number of samples used in bootsrap method, 
+#' between 50 and 100 is recommended, 50 by default
+#' @param doParallel logical; if TRUE \code{\link[foreach:foreach]{foreach}} function from 
+#' \code{\link[doParallel:doParallel-package]{doParallel}} package is used to speed up the 
+#' calculation of standard errors, FALSE by default
+#' @param cores the number of cores used in parallel computation, 
+#' if NULL (by default), the number of cores is set by the 
+#' \code{\link[doParallel:doParallel-package]{doParallel}} package.
+#' @details \code{print.summary.emcorrprobit} uses smart formatting of the coefficients, 
+#' standard errors, etc.
 #' 
-#' Standard errors are obtained via bootstrap method and a summary table with respective P-values is printed
+#' Standard errors are obtained via bootstrap method and a summary table with 
+#' respective P-values is printed.
 #' 
 #' @return 
-#' The function summary.lm computes and returns ...
+#' The \code{function summary.emcorrprobit} computes and returns the covariance matrix and 
+#' standard errors of the \code{emcorrprobit} estimates, using bootstrap method.
+#' 
+#' \code{vcov} the covariance matrix.
+#' 
 #' @examples
 #' ### using doParallel package
-#' summary(fffnew, doParallel=T)
+#' summary(example.fitted, doParallel=T)
+#' ###no parallel computations
+#' example.summary=summary(example.fitted, bootstrap.samples=100)
+#' example.summary$vcov
 
 summary.emcorrprobit <- function(x, ...)
 { cat(" Please, be very patient ... \n")
