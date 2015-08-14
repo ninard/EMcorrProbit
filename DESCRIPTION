@@ -2,7 +2,7 @@ Package: EMcorrProbit
 Type: Package
 Title: Maximum likelihood estimation of correlated probit models via EM algorithm
 Version: 1.0
-Date: 2015-08-03
+Date: 2015-08-21
 Author: Denitsa Grigorova, Nina Daskalova
 Maintainer: Denitsa Grigorova <dpgrigorova@abv.bg>
 Description: Maximum likelihood estimation of correlated probit models for longitudinal or clustered ordinal data via EM algorithm... and more and more

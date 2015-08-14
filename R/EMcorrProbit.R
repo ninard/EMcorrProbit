@@ -29,7 +29,7 @@
 #' covariance matrix of the random effects \eqn{\Sigma}
 #' @param epsilon a value for the stopping criterion
 #' @details The function fits the latent class probit model:
-#' \deqn{y_{ij} = x'_{ij}\beta+ z'_{ij}b_i+\epsilon_{ij},}{y_ij = x'_ij*\beta+ z'_ij*b_i+\epsilon_ij,} 
+#' \deqn{y_{ij} = x'_{ij}\beta+ z'_{ij}b_i+\epsilon_{ij},}
 #' where \eqn{y*_{ij} = k is observed, if y_{ij} < \alpha_k} and 
 #' \eqn{y*_{ij} = m}, if \eqn{y_{ij} > \alpha_{m-1},} the response variable 
 #' y*_{ij} may take a value from 1 to m. We assume \eqn{b_i ~ N(0,\Sigma)} and 
@@ -113,6 +113,12 @@
 #'                      start.values.beta=beta,start.values.delta=delta,
 #'                      start.values.sigma.rand=sigma.rand,
 #'                      exact=e,montecarlo=mc,epsilon=.0002)
+#'example2=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
+#'                      xrand=predictors.random,
+#'                      start.values.beta=beta,start.values.delta=delta,
+#'                      start.values.sigma.rand=sigma.rand,
+#'                      exact=e,montecarlo=mc,epsilon=.0002)
+
 #'
 #'
 #'###to see the estimates
@@ -159,9 +165,6 @@ emcorrprobitFit <- function(obj, ...) UseMethod("emcorrprobitFit")
 
 emcorrprobitFit.default <- function(obj, ...) stop("incorrect or no model specified")
 
-# emcorrprobitFit.oneord <- function(y, xfixed, xrand, start.values.beta, 
-#                                  start.values.delta=NULL,  start.values.sigma.rand, 
-#                                  exact, montecarlo=100, epsilon=.001, ...)
 emcorrprobitFit.oneord <- function(obj, ...)
 {
   #cat("Please, be patient, the function is working ... \n")
@@ -183,10 +186,7 @@ emcorrprobitFit.oneord <- function(obj, ...)
   if(!is.matrix(start.values.sigma.rand)) warning("start.values.sigma.rand must be a matrix")
   if(any(sort(unique(c(y)))!=1:max(y,na.rm=T))) stop("Missing levels in the response variable.")
   if(length(start.values.delta)!=(max(y,na.rm=T)-2)) stop("Incorrect dimension of start.values.delta.")
-  #if(exact==F & is.na(montecarlo)) {warning("montecarlo parameter undefined, 100 taken by default")
-  #montecarlo=100
-  #}
-  if(exact==F & is.na(montecarlo)) stop("montecarlo parameter undefined")
+  if(!exact & is.na(montecarlo)) stop("montecarlo parameter undefined")
   
   xfixed <- as.array(xfixed)
   xrand <- as.array(xrand)
@@ -360,11 +360,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   ### predictors.random is a 3-dimentional array: individuals x dimentions predictros fixed x time points  
   ### sigma.rand is the covaraince matrix of the random effects
   ##################################
-  #library(MASS)
-  #library(tmvtnorm)
-  #library(doParallel)
-  #registerDoParallel()
-  
   
   ##############################################################
   
@@ -430,7 +425,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
     ###
     
     #######################################################
-    if(exact==F) {
+    if(!exact) {
       simulations <- lapply(1:individuals, function(i)  
         rtmvnorm(montecarlo, mean=mean.ynew[i,knot[[i]]], 
                  sigma=matrix(as.vector(variance.ynew[knot[[i]],knot[[i]],i]),ncol=mult.obs-kk[i]),
@@ -631,7 +626,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   ###
   
  ##################################################################################
-  if(exact==F) {
+  if(!exact) {
   simulations <- lapply(1:individuals, function(i)  
     rtmvnorm(montecarlo, mean=mean.ynew[i,knot[[i]]], 
              sigma=matrix(as.vector(variance.ynew[knot[[i]],knot[[i]],i]),ncol=mult.obs-kk[i]),
@@ -759,7 +754,7 @@ standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 50, epsilon
                     y1=pred.fixed+pred.rand+matrix(rnorm(l*mult.obs),ncol=mult.obs)
                     
                     data.ordinal.new=matrix(cut(y1,c(min(y1)-1,x$thresholds,max(y1)+1), labels=F),ncol=mult.obs)
-                    data.ordinal.new=ifelse(miss==T, NA, data.ordinal.new)
+                    data.ordinal.new=ifelse(miss, NA, data.ordinal.new)
                     
                     ecm.one.ordinal(data.ordinal.new,x$predictors.fixed,
                                     x$predictors.random,start.values.beta,
@@ -778,7 +773,7 @@ standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 50, epsilon
             y1=pred.fixed+pred.rand+matrix(rnorm(l*mult.obs),ncol=mult.obs)
             
             data.ordinal.new=matrix(cut(y1,c(min(y1)-1,x$thresholds,max(y1)+1), labels=F),ncol=mult.obs)
-            data.ordinal.new=ifelse(miss==T, NA, data.ordinal.new)
+            data.ordinal.new=ifelse(miss, NA, data.ordinal.new)
             
             boot[[i]]=ecm.one.ordinal(data.ordinal.new,x$predictors.fixed,
                                       x$predictors.random,start.values.beta,
