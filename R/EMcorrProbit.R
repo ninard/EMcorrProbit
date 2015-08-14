@@ -16,13 +16,13 @@
 #' dimensions: individuals, dimension of the random effects and multiple 
 #' observations.
 #' @param exact logical; if TRUE analytical calculation of the moments of 
-#' truncated normal distribution is obtained, otherwise a Monte Carlo approach 
-#' for estimation is used.
+#' truncated normal distribution is obtained (\code{\link[tmvtnorm:mtmvnorm]{mmvtnorm}} function is used), otherwise a Monte Carlo approach 
+#' for estimation is used  (\code{\link[tmvtnorm:rtmvnorm]{rmvtnorm}})
 #' @param montecarlo numeric; the number of generated values used for the 
 #' estimation of the first two moments of truncated normal distribution. If 
 #' exact=T this parameter is not needed.
 #' @param start.values.delta start values for the differences in the consecutive 
-#' thresholds \eqn{\delta} 
+#' thresholds \eqn{\delta}. Default NULL for binary data. Otherwise it should be specified. 
 #' @param start.values.beta start values for the regression parameters 
 #' \eqn{\beta}
 #' @param start.values.sigma.rand a matrix with the start values for the 
@@ -52,6 +52,14 @@
 #' When the data consists of 2 or 3 observations per subject it is recommended using the 
 #' analytical calculation of the moments of truncated normal distribution 
 #' (\code{exact=T}).
+#' @references
+#' R. V. Gueorguieva. Correlated probit model. In Encyclopedia of Biopharmaceutical
+#'Statistics, chapter 59, pages 355-362. 2006. doi: 10.3109/9781439822463.057. URL
+#'http://informahealthcare.com/doi/abs/10.3109/9781439822463.057
+#'
+#'D. Grigorova and R. Gueorguieva. Implementation of the EM algorithm for maximum
+#'likelihood estimation of a random effects model for one longitudinal ordinal outcome.
+#'Pliska Stud. Math. Bulgar., 22:41-56, 2013 
 #' @return An object of class \code{emcorrprobit}. List with following components:
 #'   
 #' \item{Sigma.rand.effects}{The estimated covariance matrix of the random effects
@@ -68,51 +76,74 @@
 #' \item{number.iterations}{The number of iterations.}
 #' @examples
 #' ### data simulation
-#' ############################################################
-#' ## RI model, 2 predictors, 3-level ordinal variable #######
-#' ### 750 individuals - 2 observations per subject ###########
-#' ############################################################
-#' rm(list=ls())
-#' random.int=rnorm(750,0,0.1)
-#' l=length(random.int)
-#' int=-0.5
-#' mult.obs=2
-#' y1=sapply(1:mult.obs,function(i) random.int+int+i+rnorm(l), simplify="array")
-#' data.ordinal=ifelse(y1<=0,1,ifelse(y1<=1.5,2,3))
-#' table(data.ordinal)
-#' head(data.ordinal)
-#' time=sapply(1:mult.obs, function(i) rep(i,l), simplify="array")
-#' predictors.fixed=sapply(1:mult.obs, function(i) cbind(1,time[,i]), 
-#'                          simplify="array")
-#' predictors.random=sapply(1:mult.obs, function(i) matrix(rep(1,l),ncol=1), 
-#'                          simplify="array")
+#'############################################################
+#'### Random intercept model for 3-level ordinal variable ####
+#'### 750 individuals with 2 observations per subject ########
+#'### Predcitors - intercept and time ########################
+#'############################################################
+#'random.int=rnorm(750,0,0.1)
+#'l=length(random.int)
+#'int=-0.5
+#'mult.obs=2
+#'y1=sapply(1:mult.obs,function(i) random.int+int+i+rnorm(l), simplify="array")
+#'data.ordinal=ifelse(y1<=0,1,ifelse(y1<=1.5,2,3))
+#'table(data.ordinal)
+#'head(data.ordinal)
+#'time=sapply(1:mult.obs, function(i) rep(i,l), simplify="array")
+#'predictors.fixed=sapply(1:mult.obs, function(i) cbind(1,time[,i]), simplify="array")
+#'predictors.random=sapply(1:mult.obs, function(i) matrix(rep(1,l),ncol=1), simplify="array")
 #'
-#' sigma.rand=matrix(.01)
-#' beta=c(-0.55,0.95)
-#' delta=c(1.5)
-#' mc=200
-#' e=T
+#'sigma.rand=matrix(.01)
+#'beta=c(-0.55,0.95)
+#'delta=c(1.5)
+#'mc=500
+#'e=T
 #'
-#' example.complete.cases=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
-#'                        xrand=predictors.random,
-#'                        start.values.beta=beta,start.values.delta=delta,
-#'                        start.values.sigma.rand=sigma.rand,
-#'                        exact=e,montecarlo=mc,epsilon=.0001)
-#' print(example.complete.cases)
+#'### estimation
+#'###should work
+#'example1=emcorrprobit(model = "oneord", y=data.ordinal,xfixed=predictors.fixed,
+#'                      xrand=predictors.random,
+#'                      start.values.beta=beta,start.values.delta=delta,
+#'                      start.values.sigma.rand=sigma.rand,
+#'                      exact=e,montecarlo=mc,epsilon=.0002)
 #'
-#' data.ordinal[1,2]=NA
-#' head(data.ordinal)
+#'###doesn't work
+#'example2=emcorrprobit(model = "1ord", y=data.ordinal,xfixed=predictors.fixed,
+#'                      xrand=predictors.random,
+#'                      start.values.beta=beta,start.values.delta=delta,
+#'                      start.values.sigma.rand=sigma.rand,
+#'                      exact=e,montecarlo=mc,epsilon=.0002)
 #'
-#' example.missings=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
-#'                    xrand=predictors.random,
-#'                    start.values.beta=beta,start.values.delta=delta,
-#'                    start.values.sigma.rand=sigma.rand,
-#'                    exact=e,montecarlo=mc,epsilon=.0001)
-#' print(example.missings)
- 
+#'
+#'###to see the estimates
+#'example1
+#'## the same as 
+#'print(example1)
+#'
+#'### Monte Carlo approach for estimation of moments of truncated normal distribution - slower in this 
+#'### case
+#'example2=emcorrprobit(model = "oneord", y=data.ordinal,xfixed=predictors.fixed,
+#'                      xrand=predictors.random,
+#'                      start.values.beta=beta,start.values.delta=delta,
+#'                      start.values.sigma.rand=sigma.rand,
+#'                      exact=F,montecarlo=mc,epsilon=.0002)
+#'
+#'
+#'
+#'
+#'### example with missing data 
+#'data.ordinal[1,2]=NA
+#'head(data.ordinal)
+#'
+#'example3=emcorrprobit(model = "oneord", y=data.ordinal,xfixed=predictors.fixed,
+#'                      xrand=predictors.random,
+#'                      start.values.beta=beta,start.values.delta=delta,
+#'                      start.values.sigma.rand=sigma.rand,
+#'                      exact=T,montecarlo=mc,epsilon=.0002)
+
 emcorrprobit <- function(model, y, xfixed, xrand, start.values.beta, 
                          start.values.delta=NULL,  start.values.sigma.rand, 
-                         exact, montecarlo=100, epsilon=.001, ...)
+                         exact, montecarlo, epsilon, ...)
 {
   obj <- list(model = model, y=y, xfixed=xfixed, xrand=xrand, 
               start.values.beta=start.values.beta, 
@@ -214,28 +245,38 @@ print.emcorrprobit <- function(x, ...)
 #' calculation of standard errors, FALSE by default
 #' @param cores the number of cores used in parallel computation, 
 #' if NULL (by default), the number of cores is set by the 
-#' \code{\link[doParallel:doParallel-package]{doParallel}} package.
+#' \code{\link[doParallel:doParallel-package]{doParallel}} package. 
+#' @param epsilon a value for the stopping criterion. If not specified, it is defined 
+#' as 10 times \code{epsilon} used for \code{emcorrprobit} fit of \code{x}
 #' @details \code{print.summary.emcorrprobit} uses smart formatting of the coefficients, 
 #' standard errors, etc.
 #' 
 #' Standard errors are obtained via bootstrap method and a summary table with 
-#' respective P-values is printed.
+#' respective z-scores and p-values is printed.
 #' 
 #' @return 
-#' The \code{function summary.emcorrprobit} computes and returns the covariance matrix and 
-#' standard errors of the \code{emcorrprobit} estimates, using bootstrap method.
+#' The \code{function summary.emcorrprobit} computes and returns the covariance matrix
+#' of the parameters' estimates via bootstrap method. Standard errors, z-scores and p-values
+#' of the \code{emcorrprobit} estimates are presented via \code{print} function.
 #' 
-#' \code{vcov} the covariance matrix.
+#' \code{vcov} the covariance matrix of the parameters' estimates
 #' 
 #' @examples
 #' ### using doParallel package
-#' summary(example.fitted, doParallel=T)
-#' ###no parallel computations
-#' example.summary=summary(example.fitted, bootstrap.samples=100)
-#' example.summary$vcov
+#' ### for standard errors and respective P-values
+#' ex1.se=summary(example1, doParallel=T, bootstrap.samples=50)
+#' ### print
+#' ex1.se
+#' ### variance-covariance matrix of the estimates
+#' ex1.se$vcov
+#'
+#' ### without parallel computations - very slow
+#' ex2.se=summary(example1, bootstrap.samples=50)
+#' ex2.se$vcov
+#'
 
 summary.emcorrprobit <- function(x, ...)
-{ cat(" Please, be very patient ... \n")
+{ #cat(" Please, be very patient ... \n")
   vcov <- standard.error.bootstrap.one.ordinal(x, ...) 
   
   se <- sqrt(diag(vcov))
