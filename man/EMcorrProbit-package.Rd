@@ -40,10 +40,7 @@ likelihood estimation of a random effects model for one longitudinal ordinal out
 Pliska Stud. Math. Bulgar., 22:41-56, 2013
 }
 
-\keyword{ 
-~~ Optionally other standard keywords, one per line, from file KEYWORDS in ~~
-~~ the R documentation directory ~~
-package }
+\keyword{ package }
 \seealso{
 \code{\link[doParallel:doParallel-package]{doParallel}}
 \code{\link[tmvtnorm:rtmvnorm]{rmvtnorm}}
