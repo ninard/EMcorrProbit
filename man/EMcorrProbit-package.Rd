@@ -72,7 +72,7 @@ sigma.rand=matrix(.01)
 beta=c(-0.55,0.95)
 delta=c(1.5)
 mc=500
-e=T
+e=TRUE
 
 ### estimation
 ###should work
@@ -83,11 +83,11 @@ example1=emcorrprobit(model = "oneord", y=data.ordinal,xfixed=predictors.fixed,
                     exact=e,montecarlo=mc,epsilon=.0002)
 
 ###doesn't work
-example2=emcorrprobit(model = "1ord", y=data.ordinal,xfixed=predictors.fixed,
-                    xrand=predictors.random,
-                    start.values.beta=beta,start.values.delta=delta,
-                    start.values.sigma.rand=sigma.rand,
-                    exact=e,montecarlo=mc,epsilon=.0002)
+#example2=emcorrprobit(model = "1ord", y=data.ordinal,xfixed=predictors.fixed,
+#                    xrand=predictors.random,
+#                    start.values.beta=beta,start.values.delta=delta,
+#                    start.values.sigma.rand=sigma.rand,
+#                    exact=e,montecarlo=mc,epsilon=.0002)
 
 
 ###to see the estimates
@@ -97,7 +97,7 @@ print(example1)
 
 
 ###for standard errors and respective P-values
-ex1.se=summary(example1, doParallel=T, bootstrap.samples=50)
+ex1.se=summary(example1, doParallel=TRUE, bootstrap.samples=50)
 ###
 ex1.se
 ### variance-covariance matrix of the estimates
@@ -109,7 +109,7 @@ example2=emcorrprobit(model = "oneord", y=data.ordinal,xfixed=predictors.fixed,
                     xrand=predictors.random,
                     start.values.beta=beta,start.values.delta=delta,
                     start.values.sigma.rand=sigma.rand,
-                    exact=F,montecarlo=mc,epsilon=.0002)
+                    exact=FALSE,montecarlo=mc,epsilon=.0002)
 
 
 
@@ -122,7 +122,7 @@ example3=emcorrprobit(model = "oneord", y=data.ordinal,xfixed=predictors.fixed,
                     xrand=predictors.random,
                     start.values.beta=beta,start.values.delta=delta,
                     start.values.sigma.rand=sigma.rand,
-                    exact=T,montecarlo=mc,epsilon=.0002)
+                    exact=TRUE,montecarlo=mc,epsilon=.0002)
 
 
 

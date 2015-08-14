@@ -20,7 +20,7 @@
 #' for estimation is used  (\code{\link[tmvtnorm:rtmvnorm]{rmvtnorm}})
 #' @param montecarlo numeric; the number of generated values used for the 
 #' estimation of the first two moments of truncated normal distribution. If 
-#' exact=T this parameter is not needed.
+#' exact=TRUE this parameter is not needed.
 #' @param start.values.delta start values for the differences in the consecutive 
 #' thresholds \eqn{\delta}. Default NULL for binary data. Otherwise it should be specified. 
 #' @param start.values.beta start values for the regression parameters 
@@ -51,7 +51,7 @@
 #' 
 #' When the data consists of 2 or 3 observations per subject it is recommended using the 
 #' analytical calculation of the moments of truncated normal distribution 
-#' (\code{exact=T}).
+#' (\code{exact=TRUE}).
 #' @references
 #' R. V. Gueorguieva. Correlated probit model. In Encyclopedia of Biopharmaceutical
 #'Statistics, chapter 59, pages 355-362. 2006. doi: 10.3109/9781439822463.057. URL
@@ -97,7 +97,7 @@
 #'beta=c(-0.55,0.95)
 #'delta=c(1.5)
 #'mc=500
-#'e=T
+#'e=TRUE
 #'
 #'### estimation
 #'###should work
@@ -108,16 +108,16 @@
 #'                      exact=e,montecarlo=mc,epsilon=.0002)
 #'
 #'###doesn't work
-#'example2=emcorrprobit(model = "1ord", y=data.ordinal,xfixed=predictors.fixed,
-#'                      xrand=predictors.random,
-#'                      start.values.beta=beta,start.values.delta=delta,
-#'                      start.values.sigma.rand=sigma.rand,
-#'                      exact=e,montecarlo=mc,epsilon=.0002)
-#'example2=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
-#'                      xrand=predictors.random,
-#'                      start.values.beta=beta,start.values.delta=delta,
-#'                      start.values.sigma.rand=sigma.rand,
-#'                      exact=e,montecarlo=mc,epsilon=.0002)
+#'#example2=emcorrprobit(model = "1ord", y=data.ordinal,xfixed=predictors.fixed,
+#'#                      xrand=predictors.random,
+#'#                      start.values.beta=beta,start.values.delta=delta,
+#'#                      start.values.sigma.rand=sigma.rand,
+#'#                      exact=e,montecarlo=mc,epsilon=.0002)
+#'#example2=emcorrprobit(y=data.ordinal,xfixed=predictors.fixed,
+#'#                      xrand=predictors.random,
+#'#                      start.values.beta=beta,start.values.delta=delta,
+#'#                      start.values.sigma.rand=sigma.rand,
+#'#                      exact=e,montecarlo=mc,epsilon=.0002)
 
 #'
 #'
@@ -132,7 +132,7 @@
 #'                      xrand=predictors.random,
 #'                      start.values.beta=beta,start.values.delta=delta,
 #'                      start.values.sigma.rand=sigma.rand,
-#'                      exact=F,montecarlo=mc,epsilon=.0002)
+#'                      exact=FALSE,montecarlo=mc,epsilon=.0002)
 #'
 #'
 #'
@@ -145,7 +145,7 @@
 #'                      xrand=predictors.random,
 #'                      start.values.beta=beta,start.values.delta=delta,
 #'                      start.values.sigma.rand=sigma.rand,
-#'                      exact=T,montecarlo=mc,epsilon=.0002)
+#'                      exact=TRUE,montecarlo=mc,epsilon=.0002)
 
 emcorrprobit <- function(model, y, xfixed, xrand, start.values.beta, 
                          start.values.delta=NULL,  start.values.sigma.rand, 
@@ -184,8 +184,8 @@ emcorrprobitFit.oneord <- function(obj, ...)
   ############################
   if(!is.matrix(y)) warning("y must be a matrix")
   if(!is.matrix(start.values.sigma.rand)) warning("start.values.sigma.rand must be a matrix")
-  if(any(sort(unique(c(y)))!=1:max(y,na.rm=T))) stop("Missing levels in the response variable.")
-  if(length(start.values.delta)!=(max(y,na.rm=T)-2)) stop("Incorrect dimension of start.values.delta.")
+  if(any(sort(unique(c(y)))!=1:max(y,na.rm=TRUE))) stop("Missing levels in the response variable.")
+  if(length(start.values.delta)!=(max(y,na.rm=TRUE)-2)) stop("Incorrect dimension of start.values.delta.")
   if(!exact & is.na(montecarlo)) stop("montecarlo parameter undefined")
   
   xfixed <- as.array(xfixed)
@@ -197,7 +197,7 @@ emcorrprobitFit.oneord <- function(obj, ...)
   
   est <- ecm.one.ordinal(y,xfixed,xrand,start.values.beta, start.values.delta,
                          start.values.sigma.rand,
-                         exact,montecarlo,epsilon, additional=T)
+                         exact,montecarlo,epsilon, additional=TRUE)
   
   
   est$call <- obj$call
@@ -234,10 +234,12 @@ print.emcorrprobit <- function(x, ...)
   cat(x$BIC,"\n")
 }
 
+
 #' Summarizing an EMcorrProbit fit
 #' 
 #' \code{summary} of an emcorrprobit object
-#' @param x an \code{\link[EMcorrProbit:emcorrprobit]{emcorrprobit}} object
+#' @usage \code{summary(object, bootstrap.samples, doParallel, cores, epsilon)}
+#' @param object an \code{\link[EMcorrProbit:emcorrprobit]{emcorrprobit}} object
 #' @param bootstrap.samples the number of samples used in bootsrap method, 
 #' between 50 and 100 is recommended, 50 by default
 #' @param doParallel logical; if TRUE \code{\link[foreach:foreach]{foreach}} function from 
@@ -247,7 +249,7 @@ print.emcorrprobit <- function(x, ...)
 #' if NULL (by default), the number of cores is set by the 
 #' \code{\link[doParallel:doParallel-package]{doParallel}} package. 
 #' @param epsilon a value for the stopping criterion. If not specified, it is defined 
-#' as 10 times \code{epsilon} used for \code{emcorrprobit} fit of \code{x}
+#' as 10 times \code{epsilon} used for \code{emcorrprobit} fit of \code{object}
 #' @details \code{print.summary.emcorrprobit} uses smart formatting of the coefficients, 
 #' standard errors, etc.
 #' 
@@ -255,7 +257,7 @@ print.emcorrprobit <- function(x, ...)
 #' respective z-scores and p-values is printed.
 #' 
 #' @return 
-#' The \code{function summary.emcorrprobit} computes and returns the covariance matrix
+#' The function \code{summary.emcorrprobit} computes and returns the covariance matrix
 #' of the parameters' estimates via bootstrap method. Standard errors, z-scores and p-values
 #' of the \code{emcorrprobit} estimates are presented via \code{print} function.
 #' 
@@ -264,58 +266,58 @@ print.emcorrprobit <- function(x, ...)
 #' @examples
 #' ### using doParallel package
 #' ### for standard errors and respective P-values
-#' ex1.se=summary(example1, doParallel=T, bootstrap.samples=50)
+#' #ex1.se=summary(example1, doParallel=TRUE, bootstrap.samples=50)
 #' ### print
-#' ex1.se
+#' #ex1.se
 #' ### variance-covariance matrix of the estimates
-#' ex1.se$vcov
+#' #ex1.se$vcov
 #'
 #' ### without parallel computations - very slow
-#' ex2.se=summary(example1, bootstrap.samples=50)
-#' ex2.se$vcov
+#' #ex2.se=summary(example1, bootstrap.samples=50)
+#' #ex2.se$vcov
 #'
 
-summary.emcorrprobit <- function(x, ...)
+summary.emcorrprobit <- function(object, ...)
 { #cat(" Please, be very patient ... \n")
-  vcov <- standard.error.bootstrap.one.ordinal(x, ...) 
+  vcov <- standard.error.bootstrap.one.ordinal(object, ...) 
   
   se <- sqrt(diag(vcov))
   
-  se.sigma <- matrix(se[1:length(x$Sigma.rand.effects)],
-                     ncol=sqrt(length(x$Sigma.rand.effects)))
+  se.sigma <- matrix(se[1:length(object$Sigma.rand.effects)],
+                     ncol=sqrt(length(object$Sigma.rand.effects)))
   
-  se.sigma <- se.sigma[lower.tri(se.sigma,diag=T)]
+  se.sigma <- se.sigma[lower.tri(se.sigma,diag=TRUE)]
   
-  TAB.sigma <- cbind(Sigma= x$Sigma.rand.effects[lower.tri(x$Sigma.rand.effects,diag=T)], 
+  TAB.sigma <- cbind(Sigma= object$Sigma.rand.effects[lower.tri(object$Sigma.rand.effects,diag=TRUE)], 
                     StdErr = se.sigma,
-                    z.score=x$Sigma.rand.effects[lower.tri(x$Sigma.rand.effects,diag=T)]/se.sigma)
-  nam <- matrix(paste("sigma ", outer(1:ncol(x$Sigma.rand.effects),1:ncol(x$Sigma.rand.effects),
-                                  function(x,y) paste(x,y,sep="")),sep=""),ncol=ncol(x$Sigma.rand.effects))
-  nam <- nam[lower.tri(nam,diag=T)]
+                    z.score=object$Sigma.rand.effects[lower.tri(object$Sigma.rand.effects,diag=TRUE)]/se.sigma)
+  nam <- matrix(paste("sigma ", outer(1:ncol(object$Sigma.rand.effects),1:ncol(object$Sigma.rand.effects),
+                                  function(x,y) paste(x,y,sep="")),sep=""),ncol=ncol(object$Sigma.rand.effects))
+  nam <- nam[lower.tri(nam,diag=TRUE)]
   rownames(TAB.sigma)=nam
   
   
-  se.regr.coeff <- se[(length(x$Sigma.rand.effects)+1):
-                        (length(x$Sigma.rand.effects)+length(x$regression.coefficients))]
+  se.regr.coeff <- se[(length(object$Sigma.rand.effects)+1):
+                        (length(object$Sigma.rand.effects)+length(object$regression.coefficients))]
   
-  TAB.regr.coeff <- cbind(Regression.coeff= x$regression.coefficients, 
+  TAB.regr.coeff <- cbind(Regression.coeff= object$regression.coefficients, 
                StdErr = se.regr.coeff,
-               z.score = x$regression.coefficients/se.regr.coeff,
-               p.value = 2*pnorm(abs(x$regression.coefficients/se.regr.coeff), lower=F))
-  rownames(TAB.regr.coeff)=paste("Predictor",1:length(x$regression.coefficients))
+               z.score = object$regression.coefficients/se.regr.coeff,
+               p.value = 2*pnorm(abs(object$regression.coefficients/se.regr.coeff), lower=FALSE))
+  rownames(TAB.regr.coeff)=paste("Predictor",1:length(object$regression.coefficients))
     
-  if(length(x$differences.in.thresholds)>0)
+  if(length(object$differences.in.thresholds)>0)
     
-  {se.diff.thresholds =se[(length(se)-length(x$differences.in.thresholds)+1):length(se)]
+  {se.diff.thresholds =se[(length(se)-length(object$differences.in.thresholds)+1):length(se)]
   
-  TAB.diff.thresholds <- cbind(Threshold.differences= x$differences.in.thresholds, 
+  TAB.diff.thresholds <- cbind(Threshold.differences= object$differences.in.thresholds, 
                StdErr = se.diff.thresholds,
-               z.score = x$differences.in.thresholds/se.diff.thresholds,
-               p.value = 2*pnorm(abs(x$differences.in.thresholds/se.diff.thresholds), lower=F))
-  rownames(TAB.diff.thresholds)=paste("Diff",1:length(x$differences.in.thresholds))
+               z.score = object$differences.in.thresholds/se.diff.thresholds,
+               p.value = 2*pnorm(abs(object$differences.in.thresholds/se.diff.thresholds), lower=FALSE))
+  rownames(TAB.diff.thresholds)=paste("Diff",1:length(object$differences.in.thresholds))
   } else TAB.diff.thresholds=NULL
   
-  res <- list(call = x$call, 
+  res <- list(call = object$call, 
               regr.coefficients = TAB.regr.coeff,
               diff.thresholds=TAB.diff.thresholds,
               sigma=TAB.sigma,
@@ -333,9 +335,9 @@ print.summary.emcorrprobit <- function(x, ...)
   
   printCoefmat(x$sigma)
   cat("\n")
-  printCoefmat(x$regr.coefficients,P.values=T, has.Pvalue=T)
+  printCoefmat(x$regr.coefficients,P.values=TRUE, has.Pvalue=TRUE)
   cat("\n")
-  printCoefmat(x$diff.thresholds,P.values=T, has.Pvalue=T)
+  printCoefmat(x$diff.thresholds,P.values=TRUE, has.Pvalue=TRUE)
   
 }
 
@@ -367,7 +369,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   deltanew <- start.values.delta
   sigma.rand.new <- start.values.sigma.rand
   
-  num.categories <- max(data.ordinal,na.rm=T)
+  num.categories <- max(data.ordinal,na.rm=TRUE)
   if(num.categories==2) deltanew <- NULL
   
   
@@ -387,7 +389,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   mult.obs <- dim(predictors.fixed)[3]
   dimension.sigma <- ncol(sigma.rand.new)
   
-  z <- sapply(1:individuals, function(i) matrix(t(predictors.random[i,,]), ncol=dimension.sigma,byrow=F), 
+  z <- sapply(1:individuals, function(i) matrix(t(predictors.random[i,,]), ncol=dimension.sigma,byrow=FALSE), 
            simplify="array")
   ## mult.obs x dimension.sigma x individuals
   
@@ -396,7 +398,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
   ### list: missings for each individual
   knot <- lapply(1:individuals, function(i) which(!is.na(data.ordinal[i,])))
   ### list: observed for each individual
-  kk <- sapply(1:individuals, function(i) length(k[[i]]), simplify=T)
+  kk <- sapply(1:individuals, function(i) length(k[[i]]), simplify=TRUE)
   ### individuals: length of missings for each individual
   
   ######################################################################
@@ -470,8 +472,8 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
     ### when dimension.sigma=1: vector : individuals 
     
     
-    if (dimension.sigma>1)  pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%firstmomentb[,,i],simplify=T))       else 
-      pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%t(firstmomentb[i]),simplify=T))  
+    if (dimension.sigma>1)  pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%firstmomentb[,,i],simplify=TRUE))       else 
+      pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%t(firstmomentb[i]),simplify=TRUE))  
     ### individuals x mult.obs
     
     
@@ -503,8 +505,8 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
     ### when dimension.sigma=1: vector : individuals 
     
     
-    if (dimension.sigma>1)  pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%firstmomentb[,,i],simplify=T))       else 
-      pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%t(firstmomentb[i]),simplify=T))  
+    if (dimension.sigma>1)  pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%firstmomentb[,,i],simplify=TRUE))       else 
+      pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%t(firstmomentb[i]),simplify=TRUE))  
     ### individuals x mult.obs
     
     
@@ -544,8 +546,8 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
         third <- moments1A*delta-pred-pred.random+alpha.term
         ## observations x mult.obs
         
-        a <- sum(first[data.ordinal==(delta.index+1)],na.rm=T)+sum(n[(delta.index+2):num.categories])
-        b <- sum((second1+second2new)[data.ordinal==delta.index+1], na.rm=T)-sum(third[data.ordinal>delta.index+1], na.rm=T)
+        a <- sum(first[data.ordinal==(delta.index+1)],na.rm=TRUE)+sum(n[(delta.index+2):num.categories])
+        b <- sum((second1+second2new)[data.ordinal==delta.index+1], na.rm=TRUE)-sum(third[data.ordinal>delta.index+1], na.rm=TRUE)
         c <- -n[(delta.index+1)]
         
         deltanew[delta.index] <- (b+sqrt(b^2-4*a*c))/(2*a) 
@@ -576,8 +578,8 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
         ### when dimension.sigma=1: vector : individuals 
         
         
-        if (dimension.sigma>1)  pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%firstmomentb[,,i],simplify=T))       else 
-          pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%t(firstmomentb[i]),simplify=T))  
+        if (dimension.sigma>1)  pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%firstmomentb[,,i],simplify=TRUE))       else 
+          pred.random <- t(sapply(1:individuals, function(i) z[,,i]%*%t(firstmomentb[i]),simplify=TRUE))  
         ### individuals x mult.obs
       } 
       
@@ -596,7 +598,7 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
         sigmab[[i]]%*%(moments2[[i]]+moments1[[i]]%*%t(moments1[[i]])-moments1[[i]]%*%
                          t(mean.ynew[i,-k[[i]]])-(mean.ynew[i,-k[[i]]])%*%t(moments1[[i]])+(mean.ynew[i,-k[[i]]])%*%t(mean.ynew[i,-k[[i]]])
         )%*%t(sigmab[[i]])    
-    }, simplify=T)
+    }, simplify=TRUE)
     
     
     if(dimension.sigma==1) sigma.rand.new <- matrix(mean(sigma.rand)) else {sigma.rand.new <- matrix(apply(sigma.rand,1,mean), ncol=dimension.sigma)
@@ -747,47 +749,47 @@ standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 50, epsilon
                     
                     random.int=mvrnorm(n=l, mu=rep(0,ncol(sigma.rand.estimate)), Sigma=sigma.rand.estimate)
                     
-                    pred.fixed=sapply(1:mult.obs,function(obs) as.matrix(x$predictors.fixed[,,obs])%*%beta.estimate, simplify=T)
-                    if(ncol(sigma.rand.estimate)==1) pred.rand=sapply(1:mult.obs,function(obs) x$predictors.random[,,obs]*random.int,simplify=T) else
-                      pred.rand=sapply(1:mult.obs,function(obs) apply(x$predictors.random[,,obs]*random.int,1,sum),simplify=T)
+                    pred.fixed=sapply(1:mult.obs,function(obs) as.matrix(x$predictors.fixed[,,obs])%*%beta.estimate, simplify=TRUE)
+                    if(ncol(sigma.rand.estimate)==1) pred.rand=sapply(1:mult.obs,function(obs) x$predictors.random[,,obs]*random.int,simplify=TRUE) else
+                      pred.rand=sapply(1:mult.obs,function(obs) apply(x$predictors.random[,,obs]*random.int,1,sum),simplify=TRUE)
                     
                     y1=pred.fixed+pred.rand+matrix(rnorm(l*mult.obs),ncol=mult.obs)
                     
-                    data.ordinal.new=matrix(cut(y1,c(min(y1)-1,x$thresholds,max(y1)+1), labels=F),ncol=mult.obs)
+                    data.ordinal.new=matrix(cut(y1,c(min(y1)-1,x$thresholds,max(y1)+1), labels=FALSE),ncol=mult.obs)
                     data.ordinal.new=ifelse(miss, NA, data.ordinal.new)
                     
                     ecm.one.ordinal(data.ordinal.new,x$predictors.fixed,
                                     x$predictors.random,start.values.beta,
                                     start.values.delta,start.values.sigma.rand,
-                                    exact=x$exact,montecarlo=x$montecarlo,epsilon=epsilon, additional=F)
+                                    exact=x$exact,montecarlo=x$montecarlo,epsilon=epsilon, additional=FALSE)
                   } #foreach
   } else {boot=list(NA)
           
           for(i in 1:bootstrap.samples) {
             random.int=mvrnorm(n=l, mu=rep(0,ncol(sigma.rand.estimate)), Sigma=sigma.rand.estimate)
             
-            pred.fixed=sapply(1:mult.obs,function(obs) as.matrix(x$predictors.fixed[,,obs])%*%beta.estimate, simplify=T)
-            if(ncol(sigma.rand.estimate)==1) pred.rand=sapply(1:mult.obs,function(obs) x$predictors.random[,,obs]*random.int, simplify=T) else
+            pred.fixed=sapply(1:mult.obs,function(obs) as.matrix(x$predictors.fixed[,,obs])%*%beta.estimate, simplify=TRUE)
+            if(ncol(sigma.rand.estimate)==1) pred.rand=sapply(1:mult.obs,function(obs) x$predictors.random[,,obs]*random.int, simplify=TRUE) else
               pred.rand=sapply(1:mult.obs,function(obs) apply(x$predictors.random[,,obs]*random.int,1,sum),simplify="array")
             
             y1=pred.fixed+pred.rand+matrix(rnorm(l*mult.obs),ncol=mult.obs)
             
-            data.ordinal.new=matrix(cut(y1,c(min(y1)-1,x$thresholds,max(y1)+1), labels=F),ncol=mult.obs)
+            data.ordinal.new=matrix(cut(y1,c(min(y1)-1,x$thresholds,max(y1)+1), labels=FALSE),ncol=mult.obs)
             data.ordinal.new=ifelse(miss, NA, data.ordinal.new)
             
             boot[[i]]=ecm.one.ordinal(data.ordinal.new,x$predictors.fixed,
                                       x$predictors.random,start.values.beta,
                                       start.values.delta,start.values.sigma.rand,
-                                      exact=x$exact,montecarlo=x$montecarlo,epsilon=epsilon, additional=F)
+                                      exact=x$exact,montecarlo=x$montecarlo,epsilon=epsilon, additional=FALSE)
             
           }  #for
   } #else  
   est=t(sapply(1:bootstrap.samples, function(i) 
-    c(boot[[i]][[1]][lower.tri(boot[[i]][[1]],diag=T)], boot[[i]][[2]],boot[[i]][[3]]), simplify=T))
+    c(boot[[i]][[1]][lower.tri(boot[[i]][[1]],diag=TRUE)], boot[[i]][[2]],boot[[i]][[3]]), simplify=TRUE))
   res=var(est)
   nam <- matrix(paste("sigma ", outer(1:ncol(sigma.rand.estimate),1:ncol(sigma.rand.estimate),
                                       function(x,y) paste(x,y,sep="")),sep=""),ncol=ncol(sigma.rand.estimate))
-  nam <- nam[lower.tri(nam,diag=T)]
+  nam <- nam[lower.tri(nam,diag=TRUE)]
   colnames(res)=c(nam, paste("Predictor",1:length(beta.estimate)), 
                   paste("Diff",1:length(delta.estimates)))
   rownames(res)=c(nam, paste("Predictor",1:length(beta.estimate)), 
