@@ -21,7 +21,7 @@ The \code{'emcorrprobit'} is a list.
 \code{print} of an emcorrprobit object
 }
 \details{
-Sigma.rand.effects=sigma.rand.new,
+\code{list(Sigma.rand.effects=sigma.rand.new,
        regression.coefficients=betanew,
        differences.in.thresholds=deltanew,
        thresholds=c(0,cumsum(deltanew)),
@@ -35,7 +35,6 @@ Sigma.rand.effects=sigma.rand.new,
        predictors.random=predictors.random,
        exact=exact,
        montecarlo=montecarlo,
-       epsilon=epsilon}
-\examples{
-}
+       epsilon=epsilon)}
+       }
 

@@ -6,4 +6,8 @@ import(doParallel)
 import(mvtnorm)
 import(foreach)
 
+export(emcorrprobit, print.emcorrprobit, summary.emcorrprobit, print.summary.emcorrprobit)
 
+S3method(print, emcorrprobit)
+S3method(summary, emcorrprobit)
+S3method(print, summary.emcorrprobit)
