@@ -13,7 +13,6 @@ emcorrprobit <- function(model, y, xfixed, xrand, start.values.beta,
   emcorrprobitFit(obj)
 }
 
-#' @keywords internal
 emcorrprobitFit <- function(obj, ...) UseMethod("emcorrprobitFit")
 
 emcorrprobitFit.default <- function(obj, ...) stop("incorrect or no model specified")
@@ -163,7 +162,6 @@ print.summary.emcorrprobit <- function(x, ...)
 #   est
 # }
 
-#' @keywords internal
 ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,start.values.beta,start.values.delta,start.values.sigma.rand,
                          exact,montecarlo,epsilon, additional) 
   {
@@ -538,7 +536,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
 } #function ecm.one.ordinal
 
 
-#' @keywords internal
 standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 50, epsilon=NULL,
                                               doParallel = FALSE, cores=NULL) {
 
