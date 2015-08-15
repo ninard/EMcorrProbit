@@ -536,7 +536,6 @@ ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,star
 } #function ecm.one.ordinal
 
 
-
 standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 50, epsilon=NULL,
                                               doParallel = FALSE, cores=NULL) {
 
