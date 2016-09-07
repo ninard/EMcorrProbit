@@ -60,6 +60,26 @@ emcorrprobitFit.oneord <- function(obj, ...)
   est
 }
 
+emcorrprobitFit.ordcont <- function(obj, ...)
+{
+  est <- ecm.ord.plus.cont(data.ordinal,data.continuous,predictors.fixed.ordinal,
+                           predictors.fixed.continous,predictors.random.ordinal,
+                           predictors.random.continuous, 
+                           start.values.beta.ordinal,start.values.beta.continuous,
+                           start.values.delta,start.values.sigma.rand,
+                           start.values.sigma22, start.values.lambda,
+                           exact=F,montecarlo=75, 
+                           epsilon=0.002)
+  
+  
+  est$call <- obj$call
+  
+  # cat("It's ready! Use print or summary to see the result.\n")
+  
+  class(est) <- c("emcorrprobit")
+  est 
+}
+
 print.emcorrprobit <- function(x, ...)
 {
   cat("Call: \n")
@@ -607,4 +627,20 @@ standard.error.bootstrap.one.ordinal=function(x, bootstrap.samples = 50, epsilon
 
 
 
-
+ecm.ord.plus.cont <- function(data.ordinal,
+                              data.continuous,
+                              predictors.fixed.ordinal,
+                              predictors.fixed.continous,
+                              predictors.random.ordinal,
+                              predictors.random.continuous,
+                              start.values.beta.ordinal,
+                              start.values.beta.continuous,
+                              start.values.delta,
+                              start.values.sigma.rand,
+                              start.values.sigma22, 
+                              start.values.lambda,
+                              exact=F, montecarlo=100, epsilon=0.001,
+                              additional=FALSE)
+{
+  
+} #function ecm.ord.plus.cont
