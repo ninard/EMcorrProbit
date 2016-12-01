@@ -2,12 +2,15 @@
 ###model: oneord, ordcont
 emcorrprobit <- function(model, y, xfixed, xrand, start.values.beta, 
                          start.values.delta=NULL,  start.values.sigma.rand, 
+                         start.values.sigma22, start.values.lambda,
                          exact, montecarlo, epsilon, ...)
 {
   obj <- list(model = model, y=y, xfixed=xfixed, xrand=xrand, 
               start.values.beta=start.values.beta, 
               start.values.delta=start.values.delta,  
               start.values.sigma.rand=start.values.sigma.rand, 
+              start.values.sigma22 = start.values.sigma22, 
+              start.values.lambda = start.values.lambda,
               exact=exact, montecarlo=montecarlo, epsilon=epsilon, ...)
   obj$call <-match.call()
   class(obj) <- c(model)
@@ -690,21 +693,20 @@ condNormal <- function(x.given, mu, sigma, given.ind, req.ind){
 #################################################
 ######################   ecm algorithm
 ########################################################
-ecm.ord.plus.cont <- function(start.values.beta.ordinal,
+ecm.ord.plus.cont <- function(data.ordinal,
+                              data.continuous,
+                              predictors.fixed.ordinal,
+                              predictors.fixed.continous,
+                              predictors.random.ordinal,
+                              predictors.random.continuous,
+                              start.values.beta.ordinal,
                               start.values.beta.continuous,
                               start.values.delta,
                               start.values.sigma.rand,
                               start.values.sigma22, 
                               start.values.lambda,
-                              data.ordinal,
-                              data.continuous,
-                              predictors.fixed.ordinal,
-                              predictors.fixed.continous,
-                              predictors.random.ordinal,
-                              predictors.random.continuous, 
                               exact=F, montecarlo=100, epsilon=0.001,
-                              additional=FALSE) {
-  
+                              additional=FALSE) {  
   ########################################
   ### sigma.rand is the covaraince matrix of the random effects
   ##################################
