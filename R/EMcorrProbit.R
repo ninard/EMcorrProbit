@@ -84,8 +84,15 @@ emcorrprobitFit.ordcont <- function(obj, ...)
   epsilon <- obj$epsilon
   
   #######################
-  ## check ???
+  ## check
   ############################
+  if(class(data.ordinal)!="matrix") warning("data.ordinal must be a matrix")
+  if(class(start.values.sigma.rand)!="matrix") warning("start.values.sigma.rand must be a matrix")
+  if(any(sort(unique(c(data.ordinal)))!=1:max(data.ordinal,na.rm=T))) stop("Missing levels in the response variable")
+  if(length(start.values.delta)!=max(data.ordinal,na.rm=T)-2) stop("Incorrect dimension of start.values.delta")
+  #if(exact==F & !exists("montecarlo")) {stop("Montecarlo parameter isn't defined, taken by default 100")
+  #montecarlo=100
+  #}
   
   
   est <- ecm.ord.plus.cont(data.ordinal,data.continuous,predictors.fixed.ordinal,
@@ -711,21 +718,7 @@ ecm.ord.plus.cont <- function(data.ordinal,
   ### sigma.rand is the covaraince matrix of the random effects
   ##################################
   
-  ### not needed in the package
-  library(MASS)
-  library(tmvtnorm)
-  
-  #######################
-  ## check
-  ############################
-  if(class(data.ordinal)!="matrix") print("Warning message: data.ordinal must be a matrix")
-  if(class(start.values.sigma.rand)!="matrix") print("Warning message: start.values.sigma.rand must be a matrix")
-  if(any(sort(unique(c(data.ordinal)))!=1:max(data.ordinal,na.rm=T))) print("Warning message: missing levels in the response variable")
-  if(length(start.values.delta)!=max(data.ordinal,na.rm=T)-2) print("Warning message: incorrect dimension of start.values.delta")
-  #if(exact==F & !exists("montecarlo")) {print("Warning message: montecarlo parameter isn't defined, taken by default 100")
-  #montecarlo=100
-  #}
-  
+ 
   ################################################################3
   
   
@@ -1490,10 +1483,10 @@ ecm.ord.plus.cont <- function(data.ordinal,
     AIC=NULL
     BIC=NULL 
   }   ### if (additional) 
-  print(head(firstmomentb))
-  print(loglikelihood)
-  print(AIC)
-  print(BIC)
+#  print(head(firstmomentb))
+#  print(loglikelihood)
+#  print(AIC)
+#  print(BIC)
   
   
   #print(c(number.it,sigma.rand.new,betanew.ordinal,betanew.continuous,deltanew,lambdanew,sigma22new))
@@ -1509,18 +1502,21 @@ ecm.ord.plus.cont <- function(data.ordinal,
   c(sigma.rand.new,betanew.ordinal,betanew.continuous,deltanew,lambdanew,sigma22new,
     cumsum(c(0,deltanew)),1+lambdanew^2*sigma22new ,lambdanew*sigma22new)
   
-  #  list(number.of.iterations=number.it,
-  #       sigma.matrix=sigma.rand.new,
-  #       beta.ordinal=betanew.ordinal,
-  #       beta.continuous=betanew.continuous,
-  #       delta=deltanew,
-  #       thresholds=cumsum(c(0,deltanew)),
-  #       lambda=lambdanew,
-  #       sigma22=sigma22new,
-  #       cov.errors=lambdanew*sigma22new,
-  #       sigma11=1+lambdanew^2*sigma22new       
-  #  )
-  
-  
+   list(number.iterations=number.it,
+        Sigma.rand.effects=sigma.rand.new,
+        beta.ordinal=betanew.ordinal,
+        beta.continuous=betanew.continuous,
+        regression.coefficients=betanew.continuous,
+        differences.in.thresholds=deltanew,
+        thresholds=cumsum(c(0,deltanew)),
+        lambda=lambdanew,
+        sigma22=sigma22new,
+        cov.errors=lambdanew*sigma22new,
+        sigma11=1+lambdanew^2*sigma22new,  
+        loglikelihood=loglikelihood,
+        AIC=AIC,
+        BIC=BIC
+   )
+   
   
 } #function ecm.ord.plus.cont
