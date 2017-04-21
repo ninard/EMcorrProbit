@@ -53,7 +53,7 @@ emcorrprobitFit.oneord <- function(obj, ...)
   
   est <- ecm.one.ordinal(y,xfixed,xrand,start.values.beta, start.values.delta,
                          start.values.sigma.rand,
-                         exact,montecarlo,epsilon, additional=TRUE)
+                         exact,montecarlo,epsilon, additional)
   
   
   est$call <- obj$call
@@ -82,6 +82,7 @@ emcorrprobitFit.ordcont <- function(obj, ...)
   start.values.sigma22 <- obj$start.values.sigma22
   start.values.lambda <- obj$start.values.lambda
   epsilon <- obj$epsilon
+  additional <-obj$additional
   
   #######################
   ## check
@@ -101,8 +102,8 @@ emcorrprobitFit.ordcont <- function(obj, ...)
                            start.values.beta.ordinal,start.values.beta.continuous,
                            start.values.delta,start.values.sigma.rand,
                            start.values.sigma22, start.values.lambda,
-                           exact=F,montecarlo=75, 
-                           epsilon=0.002)
+                           exact,montecarlo, additional,
+                           epsilon)
   
   
   est$call <- obj$call
@@ -121,7 +122,7 @@ print.emcorrprobit <- function(x, ...)
   cat("\nCovariance matrix of the random effects: \n")
   print(x$Sigma.rand.effects)
   cat("\nRegression coefficients: \n")
-  cat(x$regression.coefficients,"\n")
+  print(x$regression.coefficients)
   if(length(x$differences.in.thresholds)>0) 
   {cat("\nDifferences in thresholds: \n")
    cat(x$differences.in.thresholds,"\n")
@@ -215,8 +216,10 @@ print.summary.emcorrprobit <- function(x, ...)
 #   est
 # }
 
-ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,start.values.beta,start.values.delta,start.values.sigma.rand,
-                         exact,montecarlo,epsilon, additional) 
+ecm.one.ordinal <- function(data.ordinal,predictors.fixed,predictors.random,
+                            start.values.beta,start.values.delta,
+                            start.values.sigma.rand,
+                         exact=FALSE,montecarlo=100,epsilon=0.001, additional=FALSE) 
   {
   ########################################
   ### wide format of longitudinal data: first level denoted by 1, second - 2 and so on
@@ -712,7 +715,7 @@ ecm.ord.plus.cont <- function(data.ordinal,
                               start.values.sigma.rand,
                               start.values.sigma22, 
                               start.values.lambda,
-                              exact=F, montecarlo=100, epsilon=0.001,
+                              exact=FALSE, montecarlo=100, epsilon=0.001,
                               additional=FALSE) {  
   ########################################
   ### sigma.rand is the covaraince matrix of the random effects
@@ -1506,16 +1509,28 @@ ecm.ord.plus.cont <- function(data.ordinal,
         Sigma.rand.effects=sigma.rand.new,
         beta.ordinal=betanew.ordinal,
         beta.continuous=betanew.continuous,
-        regression.coefficients=betanew.continuous,
+        regression.coefficients=list(ordinal=betanew.ordinal,continuous=betanew.continuous),
         differences.in.thresholds=deltanew,
         thresholds=cumsum(c(0,deltanew)),
         lambda=lambdanew,
         sigma22=sigma22new,
         cov.errors=lambdanew*sigma22new,
         sigma11=1+lambdanew^2*sigma22new,  
+        random.effects=firstmomentb,
         loglikelihood=loglikelihood,
         AIC=AIC,
-        BIC=BIC
+        BIC=BIC,
+        number.iterations=number.it,
+        data.ordinal=data.ordinal,
+        data.continuous=data.continuous,
+        predictors.fixed.ordinal=predictors.fixed.ordinal,
+        predictors.fixed.continous=predictors.fixed.continous,
+        predictors.random.ordinal=predictors.random.ordinal,
+        predictors.random.continuous=predictors.random.continuous,
+        exact=exact,
+        montecarlo=montecarlo,
+        epsilon=epsilon,
+        additional=additional
    )
    
   

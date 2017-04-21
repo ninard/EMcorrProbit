@@ -911,13 +911,13 @@ data.ordinal,data.continuous,predictors.fixed.ordinal,predictors.fixed.continous
 predictors.random.ordinal,predictors.random.continuous, exact=F,montecarlo=75, epsilon=0.002)->proba0002
 
 ###in the package
-emcorrprobit('ordcont', y=list(data.ordinal,data.continuous),
+test=emcorrprobit('ordcont', y=list(data.ordinal,data.continuous),
              xfixed=list(predictors.fixed.ordinal,predictors.fixed.continuous),
              xrand=list(predictors.random.ordinal,predictors.random.continuous), 
              start.values.beta=list(start.values.beta.ordinal,start.values.beta.continuous),
              start.values.delta,
                   start.values.sigma.rand,start.values.sigma22, start.values.lambda,
-                  exact=F,montecarlo=75, epsilon=0.002)
+                  exact=F,montecarlo=75, epsilon=0.2, additional=TRUE)
 
 
 #################################################
