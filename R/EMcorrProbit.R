@@ -34,6 +34,7 @@ emcorrprobitFit.oneord <- function(obj, ...)
   start.values.delta <-obj$start.values.delta
   start.values.sigma.rand <- obj$start.values.sigma.rand
   epsilon <- obj$epsilon
+  additional <-obj$additional
   
   #######################
   ## check
@@ -102,8 +103,8 @@ emcorrprobitFit.ordcont <- function(obj, ...)
                            start.values.beta.ordinal,start.values.beta.continuous,
                            start.values.delta,start.values.sigma.rand,
                            start.values.sigma22, start.values.lambda,
-                           exact,montecarlo, additional,
-                           epsilon)
+                           exact,montecarlo, 
+                           epsilon, additional)
   
   
   est$call <- obj$call
@@ -1502,8 +1503,10 @@ ecm.ord.plus.cont <- function(data.ordinal,
   #      "lambdanew.estimate: ",lambdanew,"sigma22new.estimate: ",sigma22new,"\n")
   
   #  c(number.it,
-  c(sigma.rand.new,betanew.ordinal,betanew.continuous,deltanew,lambdanew,sigma22new,
-    cumsum(c(0,deltanew)),1+lambdanew^2*sigma22new ,lambdanew*sigma22new)
+ # c(sigma.rand.new,betanew.ordinal,betanew.continuous,deltanew,lambdanew,sigma22new,
+  #  cumsum(c(0,deltanew)),1+lambdanew^2*sigma22new ,lambdanew*sigma22new)
+  
+  names(betanew.ordinal) = NULL
   
    list(number.iterations=number.it,
         Sigma.rand.effects=sigma.rand.new,
